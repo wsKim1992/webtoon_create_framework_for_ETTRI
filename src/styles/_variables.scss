@@ -114,11 +114,11 @@ $border-radius-sm: 0.25rem !default;
 //== Sidebar
 //
 
-$sidebar-width-open: 200px;
+$sidebar-width-open: 50px;
 $sidebar-width-closed: 50px;
 $sidebar-transition-time: 0.3s !default;
 
-$sidebar-bg-color: transparent !default;
+$sidebar-bg-color: rgba(18, 20, 43, 0.42);
 $sidebar-color: rgba($white, 0.9) !default;
 $sidebar-action-bg: transparent !default;
 
@@ -127,7 +127,7 @@ $sidebar-item-active-color: $orange !default;
 $sidebar-item-padding: 13px 20px 13px 10px !default;
 $sidebar-sub-item-padding: 12px 20px 12px 30px;
 $sidebar-scrollbar-bg: transparent;
-$sidebar-item-hover-bg-color: rgba(0, 0, 0, 0.07);
+$sidebar-item-hover-bg-color: #020202;
 $chat-sidebar-bg-color: $sidebar-bg-color !default;
 
 $breadcrumb-divider: ">";

@@ -63,6 +63,8 @@
   "dependencies": {
     "@amcharts/amcharts4": "^4.9.28",
     "@amcharts/amcharts4-geodata": "^4.1.16",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "animate.css": "4.1.0",
     "apexcharts": "^3.19.3",
     "awesome-bootstrap-checkbox": "1.0.1",
@@ -113,8 +115,8 @@
     "bundle-loader": "0.5.6",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "chalk": "4.1.0",
-    "css-loader": "2.1.1",
     "cross-env": "^7.0.3",
+    "css-loader": "2.1.1",
     "dotenv": "8.0.0",
     "dotenv-expand": "5.1.0",
     "eslint": "5.16.0",

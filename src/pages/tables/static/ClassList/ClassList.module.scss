@@ -1,0 +1,19 @@
+@import '../../../../styles/app';
+
+.dropdownMenu{
+    width:320px;
+    height:100%;
+    
+    background-color: #150144;
+    .ClassComponent{
+        width:320px;
+        height:45px;
+        display:flex;
+        flex-direction: row;
+        justify-content:space-around;
+        align-items:center;
+        margin:5px 0;
+    }
+    
+
+}

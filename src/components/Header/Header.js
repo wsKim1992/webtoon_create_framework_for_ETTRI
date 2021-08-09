@@ -32,7 +32,6 @@ import BurgerIcon from "../Icons/HeaderIcons/BurgerIcon";
 import SearchIcon from "../Icons/HeaderIcons/SearchIcon";
 import ArrowIcon from "../Icons/HeaderIcons/ArrowIcon";
 
-
 import { logoutUser } from "../../actions/user";
 import {
   openSidebar,
@@ -49,7 +48,10 @@ import avatar from "../../assets/people/a7.jpg";
 
 import s from "./Header.module.scss";
 import "animate.css";
-
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faArrowCircleLeft} from '@fortawesome/free-solid-svg-icons';
+import {faArrowCircleRight} from '@fortawesome/free-solid-svg-icons';
+import {faSave} from '@fortawesome/free-solid-svg-icons';
 class Header extends React.Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -140,29 +142,26 @@ class Header extends React.Component {
   render() {
     return (
       <Navbar className={`d-print-none `}>
-        <div className={s.burger}>
-          <NavLink
-              onClick={this.toggleSidebar}
-              className={`d-md-none ${s.navItem} text-white`}
-              href="#"
-            >
-              <BurgerIcon className={s.headerIcon} />
-            </NavLink>
-        </div>
+        <Nav className={s.saveAndMoveNav} variant="pills" as="ul">
+          <NavItem as="li">
+            <Button>
+              <FontAwesomeIcon icon={faArrowCircleLeft} />
+            </Button>
+          </NavItem>
+          <NavItem as="li" className={s.saveButtonWrap}>
+            <Button>
+              <FontAwesomeIcon icon={faSave}/> Save
+            </Button>
+          </NavItem>
+          <NavItem as="li">
+            <Button>
+              <FontAwesomeIcon icon={faArrowCircleRight} />
+            </Button>
+          </NavItem>
+        </Nav>
         <div className={`d-print-none ${s.root}`}>
-          <UncontrolledAlert
-            className={`${s.alert} mr-3 d-lg-down-none animate__animated animate__bounceIn animate__delay-1s`}
-          >
-            Check out Light Blue{" "}
-            <button
-              className="btn-link"
-              onClick={() => this.setState({ settingsOpen: true })}
-            >
-              <SettingsIcon className={s.settingsIcon} />
-            </button>{" "}
-            on the right!
-          </UncontrolledAlert>
-          <Collapse
+          
+          {/* <Collapse
             className={`${s.searchCollapse} ml-lg-0 mr-md-3`}
             isOpen={this.state.searchOpen}
           >
@@ -184,8 +183,8 @@ class Header extends React.Component {
                 onBlur={() => this.setState({ searchFocused: false })}
               />
             </InputGroup>
-          </Collapse>
-          <Form className="d-md-down-none mr-3 ml-3" inline>
+          </Collapse> */}
+          {/* <Form className="d-md-down-none mr-3 ml-3" inline>
             <FormGroup>
               <InputGroup className={`input-group-no-border ${s.searchForm}`}>
                 <InputGroupAddon addonType="prepend">
@@ -200,10 +199,10 @@ class Header extends React.Component {
                 />
               </InputGroup>
             </FormGroup>
-          </Form>
-
+          </Form> */}
+          
           <Nav className="ml-md-0">
-            <Dropdown
+            {/* <Dropdown
               nav
               isOpen={this.state.notificationsOpen}
               toggle={this.toggleNotifications}
@@ -227,8 +226,8 @@ class Header extends React.Component {
               >
                 <Notifications />
               </DropdownMenu>
-            </Dropdown>
-            <NavItem className="d-lg-none">
+            </Dropdown> */}
+            {/* <NavItem className="d-lg-none">
               <NavLink
                 onClick={this.toggleSearchOpen}
                 className={s.navItem}
@@ -236,50 +235,8 @@ class Header extends React.Component {
               >
                 <SearchIcon addId='header-search' className={s.headerIcon} />
               </NavLink>
-            </NavItem>
-            <Dropdown
-              className="d-none d-sm-block"
-              nav
-              isOpen={this.state.messagesOpen}
-              toggle={this.toggleMessagesDropdown}
-            >
-              <DropdownToggle nav className={`d-sm-down-none ${s.navItem} text-white`}>
-                <MessageIcon className={s.headerIcon} />
-              </DropdownToggle>
-              <DropdownMenu className={`${s.dropdownMenu} ${s.messages}`}>
-                <DropdownItem>
-                  <img className={s.image} src={sender1} alt="" />
-                  <div className={s.details}>
-                    <div>Jane Hew</div>
-                    <div className={s.text}>Hey, John! How is it going? ...</div>
-                  </div>
-                </DropdownItem>
-                <DropdownItem>
-                  <img className={s.image} src={sender2} alt="" />
-                  <div className={s.details}>
-                    <div>Alies Rumiancaŭ</div>
-                    <div className={s.text}>
-                      I will definitely buy this template
-                    </div>
-                  </div>
-                </DropdownItem>
-                <DropdownItem>
-                  <img className={s.image} src={sender3} alt="" />
-                  <div className={s.details}>
-                    <div>Michał Rumiancaŭ</div>
-                    <div className={s.text}>
-                      Is it really Lore ipsum? Lore ...
-                    </div>
-                  </div>
-                </DropdownItem>
-                <DropdownItem>
-                  {/* eslint-disable-next-line */}
-                  <a href="#" className="text-white">
-                    See all messages <ArrowIcon className={s.headerIcon} maskName="messagesArrow" />
-                  </a>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+            </NavItem> */}
+            
             <NavItem className={`${s.divider} d-none d-sm-block`} />
             <Dropdown
               className="d-none d-sm-block"

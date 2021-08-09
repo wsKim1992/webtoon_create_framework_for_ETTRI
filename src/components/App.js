@@ -43,9 +43,6 @@ class App extends React.PureComponent {
                     <PrivateRoute path="/app" dispatch={this.props.dispatch} component={LayoutComponent}/>
                     <Route path="/register" exact component={Register}/>
                     <Route path="/login" exact component={Login}/>
-                    <Route path="/error" exact component={ErrorPage}/>
-                    <Route component={ErrorPage}/>
-                    <Redirect from="*" to="/app/main/dashboard"/>
                 </Switch>
             </HashRouter>
         </div>

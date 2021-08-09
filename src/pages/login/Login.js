@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withRouter, Redirect, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Container, Alert, Button, FormGroup, Label, InputGroup, InputGroupAddon, Input, InputGroupText } from 'reactstrap';
-import Widget from '../../components/Widget';
 import { loginUser } from '../../actions/user';
 import microsoft from '../../assets/microsoft.png';
 
@@ -60,7 +59,7 @@ class Login extends React.Component {
         return (
             <div className="auth-page">
                 <Container>
-                    <Widget className="widget-auth mx-auto" title={<h3 className="mt-0">Login to your Web App</h3>}>
+                    
                         <p className="widget-auth-info">
                             Use your email to sign in.
                         </p>
@@ -122,7 +121,7 @@ class Login extends React.Component {
                                 </div>
                             </div>
                         </form>
-                    </Widget>
+
                 </Container>
                 <footer className="auth-footer">
                 {new Date().getFullYear()} &copy; Light Blue Template - React Admin Dashboard Template Made by <a href="https://flatlogic.com" rel="noopener noreferrer" target="_blank">Flatlogic LLC</a>.

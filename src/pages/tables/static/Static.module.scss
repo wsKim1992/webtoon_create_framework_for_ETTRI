@@ -1,17 +1,53 @@
 @import '../../../styles/app';
 
 .root {
+  width:350px;
+  height:1000px;
+  position:absolute;
+  top:0px;right:0px;
+  padding:15px;
+  border-radius:10px;
+  background-color: #030330;
+  
+  .classListNavBar{
+    width:320px;
+    height:auto;
+    padding:0px;
+    display:flex;
+    position:relative;
+    /* flex-direction: row;
+    justify-content: flex-start;
+    align-content:center; */
 
-}
+    .collapse{
+      width:100%;
+      height:auto;
+      position:absolute;
+      top:50px;left:0;
+      z-index: 10;
+    }
 
-.overFlow {
-  overflow-x: auto;
-}
+    .toggleClassListBtn{
+      width:50px;
+      height:50px;
+      border:none;
+      background-color: #0f0544;
+      color:#dbdbdd;
 
-.mainTableWidget {
-  :global {
-    .table td {
-      border: none;
+      &:hover{
+        background-color: #dbdbdd;
+        color:#0f0544;
+      }
+    }
+
+    span{
+      margin-left:7.5px;
     }
   }
+  
+  .overFlow {
+    width:320px;height:1000px;
+  }
+
 }
+

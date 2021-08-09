@@ -2,7 +2,7 @@
 
 .root {
   display: flex;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   @media (max-width: breakpoint-max(sm)) {
     margin-bottom: 50px;
   }
@@ -82,6 +82,28 @@
 
   &.logoHidden {
     display: none;
+  }
+}
+
+.saveAndMoveNav{
+  display:flex;
+  height:100%;
+  width:30%;
+  margin:0 auto;
+  flex-direction: row;
+  justify-content:space-between;
+  align-content:center;
+  button{
+    background-color:#020202;
+    border:none;
+  }
+  .saveButtonWrap{
+    height:100%;
+    width:40%;
+    button{
+      width:100%;
+      height:100%;
+    }
   }
 }
 
@@ -235,6 +257,8 @@
     }
   }
 }
+
+
 
 .support {
   &::after {

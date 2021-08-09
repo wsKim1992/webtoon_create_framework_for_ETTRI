@@ -6,11 +6,9 @@
   left: 0;
   top: 0;
   bottom: 0;
-  overflow-y: auto;
   background-color: $sidebar-bg-color;
   background: transparent;
   color: $sidebar-color;
-  margin-left: 15px;
   transition: height 1s;
   transform: translateX(-$sidebar-width-open);
 
@@ -81,9 +79,8 @@
 
 .nav {
   padding-bottom: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
-
+  position:relative;
+  background-color: $sidebar-bg-color;
   li > a > span {
     display: flex;
     justify-content: center;
@@ -92,7 +89,6 @@
     width: 32px;
     height: 32px;
   } 
-
 }
 
 .navTitle {
