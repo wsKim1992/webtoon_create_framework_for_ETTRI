@@ -1,7 +1,7 @@
 @import '../../../styles/app';
 
 .root {
-  width:350px;
+  width:280px;
   height:1000px;
   position:absolute;
   top:0px;right:0px;
@@ -10,7 +10,7 @@
   background-color: #030330;
   
   .classListNavBar{
-    width:320px;
+    width:250px;
     height:auto;
     padding:0px;
     display:flex;
@@ -46,7 +46,29 @@
   }
   
   .overFlow {
-    width:320px;height:1000px;
+    width:250px;height:1000px;
+    .tableComponent {
+      width:100%;height:1000px;
+      overflow:scroll;
+      thead{
+        width:100%;height:45px;
+        font-size: 10.5px;
+        tr{
+          overflow:hidden;
+          display:block;
+          width:320px;
+          height:45px;
+          th{
+            padding:0px;
+            float:left;
+            width:50px;
+            height:45px;
+            text-align: center;
+            line-height: 45px;
+          }
+        }
+      }
+    }
   }
 
 }

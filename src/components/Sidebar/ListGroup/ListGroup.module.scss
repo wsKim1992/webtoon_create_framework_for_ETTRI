@@ -23,7 +23,6 @@ $Collapse_left:50.5px;
             text-decoration: none;
             color: inherit;
             }
-
         }
 
         &:last-child > a {
@@ -41,6 +40,10 @@ $Collapse_left:50.5px;
             &:hover {
                 background-color: $sidebar-item-hover-bg-color;
             }
+        }
+
+        .selected{
+            background-color:  $sidebar-item-hover-bg-color;
         }
 
         .icon {
@@ -140,7 +143,6 @@ $Collapse_left:50.5px;
         .cylinder{
             display:flex;
             flex-direction: column-reverse;
-            
             width:40px;
             height:312px;
             overflow: hidden;

@@ -40,7 +40,8 @@
   position: relative;
   flex-grow: 1;
   // 20px for footer height
-  padding: 25px $content-padding ($content-padding + 20px);
+  padding: 0px; 
+  //$content-padding ($content-padding + 20px);
 
   @media (max-width: breakpoint-max(sm)) {
     padding: 20px 15px;
