@@ -22,8 +22,6 @@ const ListGroup = memo(({toolInfo,color,id})=>{
     [selected]);
 
     const onClickList = useCallback(()=>{
-        console.log(actionType);
-        console.log(actImmediatly)
         let evtType = selected?DESELECTED:SELECTED;
         if(toolType==='history'){evtType='history_selected';}
         else if(color){
@@ -31,7 +29,8 @@ const ListGroup = memo(({toolInfo,color,id})=>{
         }
         dispatch({type:evtType,id});
         if(!haveChild&&actImmediatly===undefined){
-            //penStateDispatch({type:actionType,mode});
+            console.log(mode);
+            penStateDispatch({type:actionType,mode});
         }else{
             if(actImmediatly){
                 switch(actionType){
@@ -41,7 +40,6 @@ const ListGroup = memo(({toolInfo,color,id})=>{
                     }
                     case actions.CHANGE_HISTORY:{
                         const isBack=fontClass===faArrowCircleLeft?true:false;
-                        //penStateDispatch({type:actionType,isBack})
                         break;
                     }
                     default:{break;}

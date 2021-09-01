@@ -23,7 +23,7 @@ export const actions={
   CHANGE_HISTORY:"change_history",
   CHANGE_MODE : "change_mode",
   CHANGE_BACKGROUND_IMG:"change_background_img",
-  CHANGE_SRC1:"change_src1"
+  CHANGE_SRC:"change_src",
 }
 
 //canvas 에 그릴때 pen의 모드& canvas의 상태를 설정해주는 변수 
@@ -31,20 +31,22 @@ export const actions={
 export const modes = {
   BRUSH:"brush",ERASER:"eraser",GEOMETRY_CIRCLE:"geometry-circle",
   GEOMETRY_SQUARE :"geometry-square",GEOMETRY_POLYGON:"geometry-polygon",
-  COLOR_PICKER:"color-picker",TEXT:"text",UPLOAD:"upload",FILLUP:"fill-up"
+  COLOR_PICKER:"color-picker",TEXT:"text",UPLOAD:"upload",FILLUP:"fill-up",
 }
 
 const InitialState = {
   pen:{
-    mode:'paint',
+    mode:modes.BRUSH,
     lineWidth:4,
-    strokeStyle:'#889911',
+    strokeStyle:'#000',
     scaleFactor:1,
-    historyOffset:0,
     src1:null,
     src2:null,
   },
-  history:[]
+  history:{
+    src1History:[],
+    src2History:[],
+  }
 }
 
 export const PenManagerContext = createContext({pen:InitialState.pen
@@ -54,22 +56,44 @@ export const PenManagerContext = createContext({pen:InitialState.pen
 const penReducer = (state,action)=>{
   const type = action.type;
   switch(type){
+    case actions.CHANGE_MODE:{
+      const mode = action.mode;
+      let pen = {...state.pen,mode};
+      return {...state,pen};
+    }
     case actions.CHANGE_BACKGROUND_IMG:{
       const bs64 = action.bs64;
-      console.log(bs64);
+      let history = {...state.history};
+      let src1History = history.src1History;
+      src1History.push(bs64);
+      history = {...state.history,src1History};
       const newPen = {...state.pen,src1:bs64};
-      return {...state,pen:newPen};
+      return {...state,pen:newPen,history};
     }
     case actions.CHANGE_STROKE_STYLE:{
       const strokeStyle=action.strokeStyle;
       const newPen = {...state.pen,strokeStyle:strokeStyle}
-      console.log(`newPen's strokeStyle : ${newPen.strokeStyle}`)
       return{...state,pen:newPen};
     }
     case actions.CHANGE_LINE_WIDTH:{
       const boldness = action.boldness;
       const newPen = {...state.pen,lineWidth:boldness}
       return {...state,pen:newPen};
+    }
+    case actions.CHANGE_SRC:{
+      const {index,bs64} = action;
+      let history = {...state.history};
+      let srcHistory = index===1?history.src1History:history.src2History;
+      let src = index===1?{...state.src1}:{...state.src2};
+      let offset = action?.offset;
+      if(offset&&offset<srcHistory.length-1){
+        srcHistory=srcHistory.slice(0,offset+1);
+      }
+      src = bs64;
+      srcHistory.push(src);
+      const pen = index===1?{...state.pen,src1:src}:{...state.pen,src2:src};
+      const newHistory = index===1?{...state.history,src1History:srcHistory}:{...state.history,src2History:srcHistory}
+      return {...state,pen,history:newHistory};
     }
     default:{
       return{...state}
@@ -84,7 +108,7 @@ const Layout =(props)=> {
   const penData = useMemo(()=>{
     return {penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history}
   },[PenState])
-  console.log(penData.pen);
+
   return (
     <div
       className={[
@@ -94,28 +118,29 @@ const Layout =(props)=> {
       ].join(' ')}
     >
       <div className={s.wrap}>
+      <PenManagerContext.Provider value={penData}>
         <Header />
-        <Hammer >
-          <main className={s.content}>
-            <PenManagerContext.Provider value={penData}>
-              <Sidebar />
-              <CanvasWrap/>
-            </PenManagerContext.Provider>
-            
-            <TransitionGroup>
-              <CSSTransition
-                key={props.location.key}
-                classNames="fade"
-                timeout={200}
-              >
-                <Switch>
-                  <Route path="/app/main" exact render={() => <Redirect to="/app/tables" />} />
-                  <Route path="/app/tables" exact component={TableStatic} />
-                </Switch>
-              </CSSTransition>
-            </TransitionGroup>
-          </main>
-        </Hammer>
+          <Hammer >
+            <main className={s.content}>
+                <Sidebar />
+                <CanvasWrap/>
+              
+              
+              <TransitionGroup>
+                <CSSTransition
+                  key={props.location.key}
+                  classNames="fade"
+                  timeout={200}
+                >
+                  <Switch>
+                    <Route path="/app/main" exact render={() => <Redirect to="/app/tables" />} />
+                    <Route path="/app/tables" exact component={TableStatic} />
+                  </Switch>
+                </CSSTransition>
+              </TransitionGroup>
+            </main>
+          </Hammer>
+        </PenManagerContext.Provider>
       </div>
     </div>
   );

@@ -52,6 +52,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faArrowCircleLeft} from '@fortawesome/free-solid-svg-icons';
 import {faArrowCircleRight} from '@fortawesome/free-solid-svg-icons';
 import {faSave} from '@fortawesome/free-solid-svg-icons';
+
 class Header extends React.Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -160,83 +161,7 @@ class Header extends React.Component {
           </NavItem>
         </Nav>
         <div className={`d-print-none ${s.root}`}>
-          
-          {/* <Collapse
-            className={`${s.searchCollapse} ml-lg-0 mr-md-3`}
-            isOpen={this.state.searchOpen}
-          >
-            <InputGroup
-              className={`${s.navbarForm} ${
-                this.state.searchFocused ? s.navbarFormFocused : ""
-              }`}
-            >
-              <InputGroupAddon addonType="prepend" className={s.inputAddon}>
-                <InputGroupText>
-                  <i className="fa fa-search" />
-                </InputGroupText>
-              </InputGroupAddon>
-              <Input
-                id="search-input-2"
-                placeholder="Search..."
-                className="input-transparent"
-                onFocus={() => this.setState({ searchFocused: true })}
-                onBlur={() => this.setState({ searchFocused: false })}
-              />
-            </InputGroup>
-          </Collapse> */}
-          {/* <Form className="d-md-down-none mr-3 ml-3" inline>
-            <FormGroup>
-              <InputGroup className={`input-group-no-border ${s.searchForm}`}>
-                <InputGroupAddon addonType="prepend">
-                  <InputGroupText className={s.inputGroupText}>
-                    <SearchIcon className={s.headerIcon} />
-                  </InputGroupText>
-                </InputGroupAddon>
-                <Input
-                  id="search-input"
-                  className="input-transparent"
-                  placeholder="Search Dashboard"
-                />
-              </InputGroup>
-            </FormGroup>
-          </Form> */}
-          
           <Nav className="ml-md-0">
-            {/* <Dropdown
-              nav
-              isOpen={this.state.notificationsOpen}
-              toggle={this.toggleNotifications}
-              id="basic-nav-dropdown"
-              className={`${s.notificationsMenu}`}
-            >
-              <DropdownToggle nav caret style={{ color: "#C1C3CF", padding: 0 }}>
-                <span
-                  className={`${s.avatar} rounded-circle thumb-sm float-left`}
-                >
-                  <img src={avatar} alt="..." />
-                </span>
-                <span className={`small d-sm-down-none ${s.accountCheck}`}>Philip smith</span>
-                <Badge className={`d-sm-down-none ${s.badge}`} color="danger">
-                  9
-                </Badge>
-              </DropdownToggle>
-              <DropdownMenu
-                right
-                className={`${s.notificationsWrapper} py-0 animate__animated animate__faster animate__fadeInUp`}
-              >
-                <Notifications />
-              </DropdownMenu>
-            </Dropdown> */}
-            {/* <NavItem className="d-lg-none">
-              <NavLink
-                onClick={this.toggleSearchOpen}
-                className={s.navItem}
-                href="#"
-              >
-                <SearchIcon addId='header-search' className={s.headerIcon} />
-              </NavLink>
-            </NavItem> */}
-            
             <NavItem className={`${s.divider} d-none d-sm-block`} />
             <Dropdown
               className="d-none d-sm-block"
