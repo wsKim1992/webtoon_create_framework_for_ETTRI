@@ -42,7 +42,7 @@ const Sidebar = memo(()=> {
     console.log("Sidebar")
     const {penStateDispatch}=useContext(PenManagerContext);
 
-    const onChangeInputFile=(e)=>{
+    /* const onChangeInputFile=(e)=>{
         const file = e.target.files[0];
         if(file.type.match('image/*')){
             let fileReader = new FileReader();
@@ -51,7 +51,7 @@ const Sidebar = memo(()=> {
             }
             fileReader.readAsDataURL(file)
         }
-    }
+    } */
     const fontIconList = [
         {haveChild:false,fontClass:faBrush,selected:false,toolType:'brush',actionType:actions.CHANGE_MODE,mode:modes.BRUSH},
         {haveChild:false,fontClass:faEyeDropper,selected:false,toolType:'colorPicker',actionType:actions.CHANGE_MODE,mode:modes.COLOR_PICKER},
@@ -60,7 +60,7 @@ const Sidebar = memo(()=> {
         {haveChild:false,fontClass:faVectorSquare,selected:false,toolType:'geometry',shape:'square',actionType:actions.CHANGE_MODE,mode:modes.GEOMETRY_SQUARE},
         {haveChild:false,fontClass:faCircle,selected:false,toolType:'geometry',shape:'circle',actionType:actions.CHANGE_MODE,mode:modes.GEOMETRY_CIRCLE},
         {haveChild:false,fontClass:faDrawPolygon,selected:false,toolType:'geometry',shape:'polygon',actionType:actions.CHANGE_MODE,mode:modes.GEOMETRY_POLYGON},
-        {haveChild:false,fontClass:faImage,selected:false,toolType:'upload',actionType:actions.CHANGE_MODE,mode:modes.UPLOAD,func:onChangeInputFile},
+        /* {haveChild:false,fontClass:faImage,selected:false,toolType:'upload',func:onChangeInputFile}, */
         {haveChild:true,fontClass:faPalette,selected:false,toolType:'pallete',actionType:actions.CHANGE_STROKE_STYLE,actImmediatly:false},
         {haveChild:true,fontClass:faBold,selected:false,toolType:'bolderness',actionType:actions.CHANGE_LINE_WIDTH,actImmediatly:false},
         {haveChild:false,fontClass:faSearch,selected:false,toolType:'enlarge',actionType:actions.CHANGE_SCALE,actImmediatly:false},
@@ -87,7 +87,6 @@ const Sidebar = memo(()=> {
             </ListManagerContext.Provider>
         </nav>
     );
-    
 })
 
 

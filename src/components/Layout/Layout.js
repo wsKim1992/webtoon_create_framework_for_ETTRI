@@ -58,13 +58,22 @@ const penReducer = (state,action)=>{
   switch(type){
     case actions.CHANGE_MODE:{
       const mode = action.mode;
-      let pen = {...state.pen,mode};
+      let pen = {}
+      if(mode===modes.ERASER){
+        pen = {...state.pen,mode:modes.BRUSH,strokeStyle:'#fff'}
+      }else{
+        pen = {...state.pen,mode};
+      }
       return {...state,pen};
     }
     case actions.CHANGE_BACKGROUND_IMG:{
       const bs64 = action.bs64;
+      let offset = action?.offset;
       let history = {...state.history};
       let src1History = history.src1History;
+      if(offset&&offset<src1History.length-1){
+        src1History=src1History.slice(0,offset+1);
+      }
       src1History.push(bs64);
       history = {...state.history,src1History};
       const newPen = {...state.pen,src1:bs64};

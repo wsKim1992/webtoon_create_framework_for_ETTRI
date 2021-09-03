@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-import React from "react";
+import React,{useState,useContext,useEffect} from "react";
 import PropTypes from "prop-types";
 import { withRouter } from "react-router";
 import {
@@ -54,10 +54,6 @@ import {faArrowCircleRight} from '@fortawesome/free-solid-svg-icons';
 import {faSave} from '@fortawesome/free-solid-svg-icons';
 
 class Header extends React.Component {
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    sidebarPosition: PropTypes.string.isRequired,
-  };
 
   constructor(props) {
     super(props);
@@ -81,6 +77,14 @@ class Header extends React.Component {
       notificationsOpen: false,
     };
   }
+
+/*   const [visible,setVisible] = useState(true);
+  const [messageOpen,setMessageOpen] = useState(false);
+  const [supportOpen,setSupportOpen] = useState(false);
+  const [settingsOpen,setSettingsOpen] = useState(false);
+  const [searchFocused,setSearchFocused] =useState();
+  const [searchOpen,setSearchOpen]
+  const [notificationsOpen,setNotificationsOpen] */
 
   toggleNotifications = () => {
     this.setState({
@@ -142,7 +146,7 @@ class Header extends React.Component {
 
   render() {
     return (
-      <Navbar className={`d-print-none `}>
+      <Navbar className={/* `d-print-none ` */s.navbar}>
         <Nav className={s.saveAndMoveNav} variant="pills" as="ul">
           <NavItem as="li">
             <Button>
