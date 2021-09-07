@@ -15,6 +15,8 @@ const drawImage = (src,canvasRef,canvasCtx)=>{
     }
 }
 
+const isDrawPolygon=false;
+
 const canvasDragAndDrop = (e)=>{
     
 }
@@ -30,8 +32,6 @@ const Canvas = memo(({index})=>{
     const [prevY,setPrevY] = useState(0);
     const [startX,setStartX] = useState(0);
     const [startY,setStartY] = useState(0);
-
-    console.log(pen);
     
     const canvasFunctionList={
         [modes.BRUSH]:{
@@ -135,6 +135,7 @@ const Canvas = memo(({index})=>{
             mouseDown:(e)=>{
                 const {offsetX,offsetY}=e.nativeEvent;
                 if(!isDraw){
+                    console.log("start draw polygon")
                     canvasCtx.beginPath();
                     canvasCtx.moveTo(offsetX,offsetY);
                     setIsDraw(true);
@@ -182,7 +183,6 @@ const Canvas = memo(({index})=>{
             let fileReader = new FileReader();
             fileReader.onload=(e)=>{
                 penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,bs64:e.target.result,offset});
-                
             }
             fileReader.readAsDataURL(file)
         }

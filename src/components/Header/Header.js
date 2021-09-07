@@ -148,21 +148,22 @@ class Header extends React.Component {
     return (
       <Navbar className={/* `d-print-none ` */s.navbar}>
         <Nav className={s.saveAndMoveNav} variant="pills" as="ul">
-          <NavItem as="li">
+          {/* <NavItem as="li">
             <Button>
               <FontAwesomeIcon icon={faArrowCircleLeft} />
             </Button>
-          </NavItem>
+          </NavItem> */}
           <NavItem as="li" className={s.saveButtonWrap}>
-            <Button>
+            웹툰 캐릭터 선화 제작 Tool
+            {/* <Button>
               <FontAwesomeIcon icon={faSave}/> Save
-            </Button>
+            </Button> */}
           </NavItem>
-          <NavItem as="li">
+          {/* <NavItem as="li">
             <Button>
               <FontAwesomeIcon icon={faArrowCircleRight} />
             </Button>
-          </NavItem>
+          </NavItem> */}
         </Nav>
         <div className={`d-print-none ${s.root}`}>
           <Nav className="ml-md-0">

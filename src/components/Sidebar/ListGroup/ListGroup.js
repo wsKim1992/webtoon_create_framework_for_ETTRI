@@ -15,13 +15,14 @@ const ListGroup = memo(({toolInfo,color,id})=>{
     const {fontClass,toolType,selected,actionType}=toolInfo;
     const actImmediatly = toolInfo?.actImmediatly;
     const {dispatch}=useContext(ListManagerContext)
-    const {penStateDispatch}=useContext(PenManagerContext);
+    const {penStateDispatch,pen}=useContext(PenManagerContext);
     const mode = toolInfo?.mode;
     const isCollapse = useMemo(()=>{
         return haveChild&&selected},
     [selected]);
 
     const onClickList = useCallback(()=>{
+        if(actionType==='NO_ACTION'){return false;}
         let evtType = selected?DESELECTED:SELECTED;
         if(toolType==='history'){evtType='history_selected';}
         else if(color){
@@ -64,8 +65,8 @@ const ListGroup = memo(({toolInfo,color,id})=>{
             </>
         )
         :
-        (<FontAwesomeIcon className={s.icon} icon={fontClass}/>)
-    },[])
+        (<FontAwesomeIcon style={actionType==='NO_ACTION'&&{color:`${pen.strokeStyle}`}} className={s.icon} icon={fontClass}/>)
+    },[pen.strokeStyle])
 
     return (
         <React.Fragment>

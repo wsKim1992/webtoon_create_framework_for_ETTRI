@@ -1,7 +1,7 @@
 import React,{useReducer,useMemo,createContext,memo,useContext} from 'react';
 import s from './Sidebar.module.scss';
 import {faBrush,faEraser,faFill,faVectorSquare,
-    faDrawPolygon,faImage,faArrowCircleLeft,faArrowCircleRight,
+    faDrawPolygon,faSquare,faImage,faArrowCircleLeft,faArrowCircleRight,
     faBars,faPalette, faEyeDropper,faCircle,faFont,faSearch,faBold} from "@fortawesome/free-solid-svg-icons";
 import ListGroup from "./ListGroup/ListGroup";
 import {actions,modes,PenManagerContext} from '../Layout/Layout';
@@ -39,8 +39,6 @@ const iconListReducer=(state,action)=>{
 }
 
 const Sidebar = memo(()=> {
-    console.log("Sidebar")
-    const {penStateDispatch}=useContext(PenManagerContext);
 
     /* const onChangeInputFile=(e)=>{
         const file = e.target.files[0];
@@ -53,6 +51,7 @@ const Sidebar = memo(()=> {
         }
     } */
     const fontIconList = [
+        {haveChild:false,fontClass:faSquare,selected:false,toolType:'brush',actionType:'NO_ACTION'},
         {haveChild:false,fontClass:faBrush,selected:false,toolType:'brush',actionType:actions.CHANGE_MODE,mode:modes.BRUSH},
         {haveChild:false,fontClass:faEyeDropper,selected:false,toolType:'colorPicker',actionType:actions.CHANGE_MODE,mode:modes.COLOR_PICKER},
         {haveChild:false,fontClass:faEraser,selected:false,toolType:'eraser',actionType:actions.CHANGE_MODE,mode:modes.ERASER},
