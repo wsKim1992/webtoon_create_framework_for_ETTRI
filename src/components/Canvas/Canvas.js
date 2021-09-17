@@ -2,7 +2,7 @@ import React,{useState,useCallback,useContext,useMemo,memo,useRef, useEffect,for
 import s from './Canvas.module.scss';
 import { actions,modes,PenManagerContext } from '../Layout/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUndo,faRedo,faImage,faSave} from '@fortawesome/free-solid-svg-icons';
+import { faUndo,faRedo,faImage,faSave, faSearchMinus, faSearchPlus} from '@fortawesome/free-solid-svg-icons';
 import { Button } from 'reactstrap';
 import Input from 'reactstrap/lib/Input';
 import Label from 'reactstrap/lib/Label';
@@ -15,14 +15,16 @@ const drawImage = (src,canvasRef,canvasCtx)=>{
     }
 }
 
-const isDrawPolygon=false;
-
-const canvasDragAndDrop = (e)=>{
-    
+const getTempCanvas = (src,w,h)=>{
+    let img = new Image();
+    img.width=w;img.height=h;
+    img.src = src;
+    return img;
 }
 
-const Canvas = memo(({index})=>{
+const Canvas = memo(({index,canvasWidth})=>{
     const canvasRef = useRef(null);
+    const btnListWrapRef = useRef(null);
     const [canvasCtx,setCanvasCtx] = useState(null);
     const [isDraw,setIsDraw]=useState(false);
     const {pen,history,penStateDispatch}=useContext(PenManagerContext);
@@ -32,7 +34,7 @@ const Canvas = memo(({index})=>{
     const [prevY,setPrevY] = useState(0);
     const [startX,setStartX] = useState(0);
     const [startY,setStartY] = useState(0);
-    
+
     const canvasFunctionList={
         [modes.BRUSH]:{
             mouseDown:(e)=>{
@@ -54,6 +56,7 @@ const Canvas = memo(({index})=>{
                 e.preventDefault();
                 setIsDraw(false);
                 setOffset(prevOffset=>prevOffset+1);
+                
                 penStateDispatch({type:actions.CHANGE_SRC,offset,index,bs64:canvasRef.current.toDataURL('image/jpeg')});
             },
         },
@@ -189,8 +192,10 @@ const Canvas = memo(({index})=>{
     }:null
     useEffect(()=>{
         const ctx = canvasRef.current.getContext('2d',{alpha:true});
-        canvasRef.current.width = 720;
-        canvasRef.current.height =720;
+        console.log(`canvas Width : ${canvasWidth}`)
+        canvasRef.current.width = canvasWidth;
+        canvasRef.current.height = canvasWidth;
+
         setCanvasCtx(ctx);
         ctx.fillStyle='#fff';
         ctx.lineJoin = 'round';
@@ -208,6 +213,19 @@ const Canvas = memo(({index})=>{
     useEffect(()=>{
         drawImage(index===1?pen.src1:pen.src2,canvasRef,canvasCtx);
     },[index===1?pen.src1:pen.src2])
+
+    useEffect(()=>{
+        const src = index===1?pen.src1:pen.src2;
+        const tmpCanvas = getTempCanvas(src,canvasRef.current.width,canvasRef.current.height);
+        const scale = index===1?pen.src1Scale:pen.src2Scale;
+        console.log(`${scale}`);
+        const w = canvasRef.current.width;
+        const h = canvasRef.current.height;
+        let sw = scale>=1? w/scale:w*scale;
+        let sh = scale>=1? h/scale:h*scale;
+        canvasRef.current.getContext('2d').lineWidth*=scale
+        canvasRef.current.getContext('2d').drawImage(tmpCanvas,0,0,sw,sh,0,0,w,h);
+    },[index===1?pen.src1Scale:pen.src2Scale])
 
     const onBeforeBtnClicked = (e)=>{
         e.preventDefault();
@@ -227,18 +245,40 @@ const Canvas = memo(({index})=>{
         setOffset(prevOffset=>prevOffset+1);
     }
 
+    const onEnlargeScaleBtnClicked = (e)=>{
+        e.preventDefault();
+        penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'plus'});
+    }
+
+    const onReduceScaleBtnClicked = (e)=>{
+        e.preventDefault();
+        penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'minus'});
+    }
+
     return(
         <div>
-            <div className={s.btnListWrap}>
+            <div ref={btnListWrapRef} className={s.btnListWrap}>
                 <div className={s.historyBtnListWrap}>
                     <div className={s.historyBtnWrap}>
                         <Button onClick={onBeforeBtnClicked}>
-                            <FontAwesomeIcon icon={faUndo} />
+                            <FontAwesomeIcon style={{width:10.5,height:10.5}} icon={faUndo} />
                         </Button>
                     </div>
                     <div className={s.historyBtnWrap}>
                         <Button onClick={onAfterBtnClicked}>
-                            <FontAwesomeIcon icon={faRedo} />
+                            <FontAwesomeIcon style={{width:10.5,height:10.5}} icon={faRedo} />
+                        </Button>
+                    </div>
+                </div>
+                <div className={s.historyBtnListWrap}>
+                    <div className={s.historyBtnWrap}>
+                        <Button onClick={onEnlargeScaleBtnClicked}>
+                            <FontAwesomeIcon icon={faSearchPlus} />
+                        </Button>
+                    </div>
+                    <div className={s.historyBtnWrap}>
+                        <Button onClick={onReduceScaleBtnClicked}>
+                            <FontAwesomeIcon icon={faSearchMinus} />
                         </Button>
                     </div>
                 </div>
@@ -247,12 +287,12 @@ const Canvas = memo(({index})=>{
                         {index===1
                             &&
                         <Label htmlFor={s.loadImage}>
-                            <span>Load Image</span><FontAwesomeIcon style={{width:30,height:30}} icon={faImage} />
+                            <span>Load Image</span><FontAwesomeIcon style={{width:12.5,height:12.5}} icon={faImage} />
                         </Label>}
                         {index===2
                             &&
                         <Label>
-                            <span>Save Result</span><FontAwesomeIcon style={{width:30,height:30}} icon={faSave} />
+                            <span>Save Image</span><FontAwesomeIcon style={{width:12.5,height:12.5}} icon={faSave} />
                         </Label>}
                     </Button>
                 </div>
@@ -260,6 +300,9 @@ const Canvas = memo(({index})=>{
             {index===1&&<Input id={s.loadImage} onChange={onChangeInputFile} type="file" accept="image/*"/>}
             
             <canvas 
+            style={{width:canvasWidth,height:canvasWidth}}
+            id={`canvas${index}`}
+            className={s.canvas}
             onDrag={(e)=>{console.log(e)}}
             onMouseDown={canvasFunctionList[pen.mode].mouseDown}
             onMouseUp={canvasFunctionList[pen.mode].mouseUp}

@@ -9,6 +9,10 @@
   border-radius:10px;
   background-color: #030330;
   
+  :global(.sidebar-hide) & {
+    display: none;
+  }
+
   .classListNavBar{
     width:250px;
     height:auto;

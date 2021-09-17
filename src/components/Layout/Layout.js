@@ -1,4 +1,4 @@
-import React,{createContext, useRef, useReducer,useMemo, useEffect} from 'react';
+import React,{createContext, useRef,useState, useReducer,useMemo, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Switch, Route, withRouter, Redirect } from 'react-router';
@@ -42,6 +42,8 @@ const InitialState = {
     scaleFactor:1,
     src1:null,
     src2:null,
+    src1Scale:1,
+    src2Scale:1,
   },
   history:{
     src1History:[],
@@ -52,6 +54,8 @@ const InitialState = {
 export const PenManagerContext = createContext({pen:InitialState.pen
   ,history:InitialState.history
   ,penStateDispatch:()=>{}});
+
+
 
 const penReducer = (state,action)=>{
   const type = action.type;
@@ -104,6 +108,16 @@ const penReducer = (state,action)=>{
       const newHistory = index===1?{...state.history,src1History:srcHistory}:{...state.history,src2History:srcHistory}
       return {...state,pen,history:newHistory};
     }
+    case actions.CHANGE_SCALE:{
+      const {index,scaleType}=action;
+      let pen = {...state.pen};
+      let scale = index===1?pen.src1Scale:pen.src2Scale;
+      scaleType==='plus' ? scale*=2:scale/=2;
+      if(scaleType==='minus'&&scale<1){return{...state};}
+      else if(scaleType==='plus'&&scale>16){return {...state};} 
+      pen = index===1? {...state.pen,src1Scale:scale}:{...state.pen,src2Scale:scale};
+      return {...state,pen}
+    }
     default:{
       return{...state}
     }
@@ -112,11 +126,21 @@ const penReducer = (state,action)=>{
 
 const Layout =(props)=> {
   const [PenState,penStateDispatch]=useReducer(penReducer,InitialState);
-  const canvasRefs = useRef({ref1:{},ref2:{}});
-  
+  const [entireWidth,setEntireWidth]=useState(window.innerWidth);
+  const [entireHeight,setEntireHeight] = useState(window.innerHeight);
+
+  const wrapRef = useRef(null);
+
   const penData = useMemo(()=>{
     return {penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history}
   },[PenState])
+
+  useEffect(()=>{
+    window.addEventListener("resize",(e)=>{
+      setEntireWidth(window.innerWidth); 
+      setEntireHeight(window.innerHeight);
+    })
+  },[])
 
   return (
     <div
@@ -124,16 +148,15 @@ const Layout =(props)=> {
         s.root,
         'sidebar-' + props.sidebarPosition,
         'sidebar-' + props.sidebarVisibility,
-      ].join(' ')}
+      ].join(' ') }
     >
-      <div className={s.wrap}>
+      <div className={s.wrap} style={{width:entireWidth*0.971,height:entireHeight}}>
       <PenManagerContext.Provider value={penData}>
-        <Header />
+        <Header headerWidth={entireWidth*0.971} />
           <Hammer >
-            <main className={s.content}>
-                <Sidebar />
-                <CanvasWrap/>
-              
+            <main className={s.content} style={{width:entireWidth*0.971}}>
+              <Sidebar sidebarWidth={parseFloat(entireWidth*0.03)}/>
+              <CanvasWrap canvasWrapWidth={entireWidth*0.971} canvasWrapHeight={entireHeight*0.936}/>
               
               <TransitionGroup>
                 <CSSTransition

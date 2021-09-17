@@ -146,7 +146,7 @@ class Header extends React.Component {
 
   render() {
     return (
-      <Navbar className={/* `d-print-none ` */s.navbar}>
+      <Navbar className={/* `d-print-none ` */s.navbar} style={{width:this.props.headerWidth}}>
         <Nav className={s.saveAndMoveNav} variant="pills" as="ul">
           {/* <NavItem as="li">
             <Button>
@@ -167,7 +167,6 @@ class Header extends React.Component {
         </Nav>
         <div className={`d-print-none ${s.root}`}>
           <Nav className="ml-md-0">
-            <NavItem className={`${s.divider} d-none d-sm-block`} />
             <Dropdown
               className="d-none d-sm-block"
               nav

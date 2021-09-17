@@ -38,7 +38,7 @@ const iconListReducer=(state,action)=>{
     }
 }
 
-const Sidebar = memo(()=> {
+const Sidebar = memo(({sidebarWidth})=> {
 
     /* const onChangeInputFile=(e)=>{
         const file = e.target.files[0];
@@ -79,7 +79,7 @@ const Sidebar = memo(()=> {
                 <ul className={s.nav}>
                     {
                         state.IconList.map((v,key)=>(
-                            <ListGroup key={`${v.fontClass}_${key}`} toolInfo={v} id={key}/>
+                            <ListGroup sidebarWidth={sidebarWidth} key={`${v.fontClass}_${key}`} toolInfo={v} id={key}/>
                         ))
                     }
                 </ul>

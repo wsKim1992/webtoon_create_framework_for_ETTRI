@@ -9,7 +9,7 @@ import ControllBold from './ControllBold/ControllBold';
 import { ListManagerContext,SELECTED,DESELECTED } from '../Sidebar';
 import { PenManagerContext,actions } from '../../Layout/Layout'; 
 
-const ListGroup = memo(({toolInfo,color,id})=>{
+const ListGroup = memo(({sidebarWidth,toolInfo,color,id})=>{
     /* const [isCollapse,setIsCollapse]=useState(false); */
     const {haveChild} = toolInfo;
     const {fontClass,toolType,selected,actionType}=toolInfo;
@@ -59,7 +59,7 @@ const ListGroup = memo(({toolInfo,color,id})=>{
         (
             <>
                 <input id="imgUpload" onChange={toolInfo.func} type="file" style={{display:'none'}}/>
-                <label htmlFor="imgUpload" style={{width:25,height:25,margin:0}}>
+                <label htmlFor="imgUpload" /* style={{width:19.5,height:19.5,margin:0}} */>
                     <FontAwesomeIcon className={s.icon} icon={fontClass}/>
                 </label>
             </>
@@ -71,7 +71,7 @@ const ListGroup = memo(({toolInfo,color,id})=>{
     return (
         <React.Fragment>
             <li className={[s.headerLink].join(' ')} onClick={onClickList}>
-                <a className={AtagClassName} style={ color&&{color:color}}>
+                <a style={ color&&{color:color}}>
                     {renderFontAwesomeIcon()}
                 </a>
             </li>

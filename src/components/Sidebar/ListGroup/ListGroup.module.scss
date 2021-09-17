@@ -3,13 +3,12 @@ $Collapse_top:0px;
 $Collapse_left:50.5px;
     .headerLink {
         /* overflow-x: hidden; */
-
+        width:100%;
         @media (min-width: map_get($grid-breakpoints, lg)) and (min-height: $screen-lg-height), (max-width: map_get($grid-breakpoints, md) - 1px) {
             font-size: $font-size-base;
         }
 
         a {
-            font-size: 14px;
             font-weight: $font-weight-thin;
             display: flex;
             flex-direction: row;
@@ -32,10 +31,11 @@ $Collapse_left:50.5px;
         > a {
             position: relative;
             align-items: center;
-            padding: $sidebar-item-padding;
+            padding: 10px;
             border-top: 1px solid $sidebar-item-border-color;
             white-space: nowrap;
             border-radius: .25rem;
+            width:100%;
 
             &:hover {
                 background-color: $sidebar-item-hover-bg-color;
@@ -49,8 +49,8 @@ $Collapse_left:50.5px;
         .icon {
             display:inline-block;
             margin-right: .5rem;
-            height: 25px;
-            width: 25px;
+            height: 15.5px;
+            width: 15.5px;
             text-align: center;
           }
 
@@ -84,7 +84,7 @@ $Collapse_left:50.5px;
             }
 
             a {
-                padding:13px 20px 13px 10px;
+                padding:10px;
                 font-size: $font-size-base;
                 font-weight: $font-weight-normal;
 
@@ -101,7 +101,7 @@ $Collapse_left:50.5px;
     .color_picker_panel{
         position:absolute;
         top:0;
-        left:50.5px;
+        left:100%;
     
         border: none;
         box-shadow: none;

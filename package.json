@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "cross-env PUBLIC_URL='./' node scripts/build.js",
-    "start": "node scripts/start.js",
+    "start": "HOST='1.201.8.82' PORT=9992 node scripts/start.js",
     "test": "node scripts/test.js"
   },
   "browserslist": [
@@ -41,7 +41,7 @@
       "<rootDir>/src/**/__tests__/**/*.{js,jsx}",
       "<rootDir>/src/**/?(*.)(spec|test).{js,jsx}"
     ],
-    "testURL": "http://localhost",
+    "testURL": "http://1.201.8.82",
     "transform": {
       "^.+\\.(js|jsx)$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
@@ -63,11 +63,13 @@
   "dependencies": {
     "@amcharts/amcharts4": "^4.9.28",
     "@amcharts/amcharts4-geodata": "^4.1.16",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "animate.css": "4.1.0",
     "apexcharts": "^3.19.3",
     "awesome-bootstrap-checkbox": "1.0.1",
+    "axios": "^0.21.4",
     "bootstrap": "4.5.0",
     "classnames": "^2.2.6",
     "echarts": "^4.8.0",

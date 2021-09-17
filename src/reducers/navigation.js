@@ -4,7 +4,7 @@ const initialState = {
   sidebarOpened: false,
   activeItem: window.location.pathname,
   sidebarPosition: 'left',
-  sidebarVisibility: 'show',
+  sidebarVisibility: 'hide',
 };
 
 export default function runtime(state = initialState, action) {
