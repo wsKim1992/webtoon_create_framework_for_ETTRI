@@ -1,115 +1,175 @@
-import React from 'react';
+import React,{useState,useMemo,useEffect,use} from 'react';
+import {useDispatch,useSelector} from 'react-redux'
 import PropTypes from 'prop-types';
 import { withRouter, Redirect, Link } from 'react-router-dom';
-import { connect } from 'react-redux';
 import { Container, Alert, Button, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Input, Label } from 'reactstrap';
-import { registerUser, registerError } from '../../actions/register';
+import { updateRegisterState,registerUser, registerError,sendEmailRequest,
+    TYPE_EMAIL,TYPE_CODE,TYPE_PASSWORD, sendRegistRequest } from '../../actions/register';
 import microsoft from '../../assets/microsoft.png';
 import Login from '../login';
+import styled from 'styled-components'
 
-class Register extends React.Component {
-    static propTypes = {
-        dispatch: PropTypes.func.isRequired,
-    };
+const StyledButtonWrap = styled.div`
+    display:flex;
+    flex-direction:row;
+    justify-content:space-evenly;
+    align-item : center;
+    height:auto;
+`
 
-    constructor(props) {
-        super(props);
+const StyledButton = styled(Button)`
+    display:block;
+    width:33.3%;
+    height:100%;
+    margin:0;
+    text-align:center;
+    background-color:'#db2a3'
+`
 
-        this.state = {
-            email: '',
-            password: '',
-            confirmPassword: ''
-        };
+const StyledEnterCodeButton = styled(Button)`
+    display:block;
+    width:33.3%;
+    height:100%;
+    margin:0;
+    text-align:center;
+    color:'#fff';
+    background-color:#ffc107;
+`
 
-        this.doRegister = this.doRegister.bind(this);
-        this.changeEmail = this.changeEmail.bind(this);
-        this.changePassword = this.changePassword.bind(this);
-        this.changeConfirmPassword = this.changeConfirmPassword.bind(this);
-        this.checkPassword = this.checkPassword.bind(this);
-        this.isPasswordValid = this.isPasswordValid.bind(this);
+const StyledPTag = styled.p`
+    display:block;
+    width:100%;
+    height:43.7%;
+    margin:10px 0 10px 0;
+    text-align:center;
+`
+
+const Register =(props)=> {
+    console.log('register page');
+    const {isFetching,errorMessage,registerState} = useSelector(state=>state.register);
+    const dispatch = useDispatch();
+
+    const [email,setEmail]=useState('');
+    const [code,setCode]=useState('');
+    const [password,setPassword]=useState('');
+    const [confirmPassword,setConfirmPassword]=useState('');
+
+    const changeEmail=(event)=>{
+        setEmail( event.target.value);
     }
 
-    changeEmail(event) {
-        this.setState({email: event.target.value});
+    const changeCode=(event)=>{
+        setCode(event.target.value);
+    } 
+
+    const changePassword=(event)=> {
+        setPassword(event.target.value);
     }
 
-    changePassword(event) {
-        this.setState({password: event.target.value});
+    const changeConfirmPassword=(event)=>{
+        setConfirmPassword(event.target.value);
     }
 
-    changeConfirmPassword(event) {
-        this.setState({confirmPassword: event.target.value});
-    }
-
-    checkPassword() {
-        if (!this.isPasswordValid()) {
-            if (!this.state.password) {
-                this.props.dispatch(registerError("Password field is empty"));
+    const checkPassword=()=>{
+        if (isPasswordValid()) {
+            if (password) {
+                dispatch(registerError("Password field is empty"));
             } else {
-                this.props.dispatch(registerError("Passwords are not equal"));
+                dispatch(registerError("Passwords are not equal"));
             }
             setTimeout(() => {
-                this.props.dispatch(registerError());
+                dispatch(registerError());
             }, 3 * 1000)
         }
     }
 
-    isPasswordValid() {
-       return this.state.password && this.state.password === this.state.confirmPassword;
+    const isPasswordValid=()=> {
+       return password && password === confirmPassword;
     }
 
-    doRegister(e) {
+    const doRegister=(e)=>{
         e.preventDefault();
-        if (!this.isPasswordValid()) {
-            this.checkPassword();
+        if (isPasswordValid()) {
+            checkPassword();
         } else {
-            this.props.dispatch(registerUser({
-                creds: {
-                    email: this.state.email,
-                    password: this.state.password
-                },
-                history: this.props.history
+            dispatch(registerUser({
+                creds: {email,password},
+                history: props.history
             }));
         }
     }
+    
+    const {from} = props.location.state || {from: {pathname: '/app'}}; // eslint-disable-line
 
-    render() {
-        const {from} = this.props.location.state || {from: {pathname: '/app'}}; // eslint-disable-line
-
-        // cant access login page while logged in
-        if (Login.isAuthenticated(JSON.parse(localStorage.getItem('authenticated')))) {
-            return (
-                <Redirect to={from}/>
-            );
-        }
-
+    // cant access login page while logged in
+    if (Login.isAuthenticated(JSON.parse(localStorage.getItem('authenticated')))) {
         return (
-            <div className="auth-page">
-                <Container>
-                        <p className="widget-auth-info">
-                            Please fill all fields below.
-                        </p>
-                        <form onSubmit={this.doRegister}>
-                            {
-                                this.props.errorMessage && (
-                                    <Alert className="alert-sm widget-middle-overflow rounded-0" color="danger">
-                                        {this.props.errorMessage}
-                                    </Alert>
-                                )
-                            }
-                            <FormGroup className="mt">
-                                <Label for="email">Email</Label>
-                                <InputGroup className="input-group-no-border">
-                                    <InputGroupAddon addonType="prepend">
-                                        <InputGroupText>
-                                            <i className="la la-user text-white"/>
-                                        </InputGroupText>
-                                    </InputGroupAddon>
-                                    <Input id="email" className="input-transparent pl-3" value={this.state.email}
-                                           onChange={this.changeEmail} type="email"
-                                           required name="email" placeholder="Email"/>
-                                </InputGroup>
-                            </FormGroup>
+            <Redirect to={from}/>
+        );
+    }
+
+    const onClickSubmit=(e)=>{
+        e.preventDefault();
+        registerState===TYPE_EMAIL?
+            dispatch(updateRegisterState(email))
+            :dispatch(sendEmailRequest(email));
+    }
+
+    const onClickSubmitCode = (e)=>{
+        e.preventDefault();
+        dispatch(updateRegisterState(code));
+    }
+
+    const onClickRegister=(e)=>{
+        e.preventDefault();
+        if (isPasswordValid()) {
+            dispatch(updateRegisterState({password,history:props.history}));
+        }
+    }
+
+    return (
+        <div className="auth-page">
+            <Container>
+                <h1>회원가입</h1>
+                <p className="widget-auth-info">
+                    email 을 입력해주세요
+                </p>
+                <form onSubmit={doRegister}>
+                    {
+                        errorMessage && (
+                            <Alert className="alert-sm widget-middle-overflow rounded-0" color="danger">
+                                {errorMessage}
+                            </Alert>
+                        )
+                    }
+                    {registerState===TYPE_EMAIL && <FormGroup className="mt">
+                        <Label for="email">Email</Label>
+                        <InputGroup className="input-group-no-border">
+                            <InputGroupAddon addonType="prepend">
+                                <InputGroupText>
+                                    <i className="la la-user text-white"/>
+                                </InputGroupText>
+                            </InputGroupAddon>
+                            <Input id="email" className="input-transparent pl-3" value={email}
+                                    onChange={changeEmail} type="email"
+                                    required name="email" placeholder="Email"/>
+                        </InputGroup>
+                    </FormGroup>}
+                    {registerState===TYPE_CODE && <FormGroup className="mt">
+                        <Label for="register_code">Register Code</Label>
+                        <InputGroup className="input-group-no-border">
+                            <InputGroupAddon addonType="prepend">
+                                <InputGroupText>
+                                    <i className="la la-user text-white"/>
+                                </InputGroupText>
+                            </InputGroupAddon>
+                            <Input id="register_code" className="input-transparent pl-3" value={code}
+                                    onChange={changeCode} type="code"
+                                    required name="code" placeholder="code"/>
+                        </InputGroup>
+                    </FormGroup>}
+                    {registerState===TYPE_PASSWORD&&(
+                        <>
                             <FormGroup>
                                 <Label for="password">Password</Label>
                                 <InputGroup className="input-group-no-border">
@@ -118,9 +178,9 @@ class Register extends React.Component {
                                             <i className="la la-lock text-white"/>
                                         </InputGroupText>
                                     </InputGroupAddon>
-                                    <Input id="password" className="input-transparent pl-3" value={this.state.password}
-                                           onChange={this.changePassword} type="password"
-                                           required name="password" placeholder="Password"/>
+                                    <Input id="password" className="input-transparent pl-3" value={password}
+                                            onChange={changePassword} type="password"
+                                            required name="password" placeholder="Password"/>
                                 </InputGroup>
                             </FormGroup>
                             <FormGroup>
@@ -131,46 +191,51 @@ class Register extends React.Component {
                                             <i className="la la-lock text-white"/>
                                         </InputGroupText>
                                     </InputGroupAddon>
-                                    <Input id="confirmPassword" className="input-transparent pl-3" value={this.state.confirmPassword}
-                                           onChange={this.changeConfirmPassword} onBlur={this.checkPassword} type="password"
-                                           required name="confirmPassword" placeholder="Confirm"/>
+                                    <Input id="confirmPassword" className="input-transparent pl-3" value={confirmPassword}
+                                            onChange={changeConfirmPassword} onBlur={checkPassword} type="password"
+                                            required name="confirmPassword" placeholder="Confirm"/>
                                 </InputGroup>
                             </FormGroup>
-                            <div className="bg-widget-transparent auth-widget-footer">
-                                <Button type="submit" color="danger" className="auth-btn"
-                                        size="sm" style={{color: '#fff'}}>{this.props.isFetching ? 'Loading...' : 'Register'}</Button>
-                                <p className="widget-auth-info mt-4">
-                                    Already have the account? Login now!
-                                </p>
-                                <Link className="d-block text-center mb-4" to="login">Enter the account</Link>
-                                <div className="social-buttons">
-                                    <Button color="primary" className="social-button">
-                                        <i className="social-icon social-google"/>
-                                        <p className="social-text">GOOGLE</p>
-                                    </Button>
-                                    <Button color="success" className="social-button">
-                                        <i className="social-icon social-microsoft"
-                                           style={{backgroundImage: `url(${microsoft})`}}/>
-                                        <p className="social-text" style={{color: '#fff'}}>MICROSOFT</p>
-                                    </Button>
-                                </div>
-                            </div>
-                        </form>
-                </Container>
-                <footer className="auth-footer">
+                        </>
+                    )}
+                    <StyledButtonWrap className="bg-widget-transparent ">
+                        {registerState!==TYPE_PASSWORD&&<StyledButton onClick={onClickSubmit} type="submit" color="danger" 
+                            size="sm" >
+                            {isFetching&&(<span>email 전송중..</span>)}
+                            {!isFetching&&registerState===TYPE_EMAIL?'이메일로 인증코드 받기':'인증번호 다시 받기'}
+                        </StyledButton>}
+                        {registerState===TYPE_CODE&&<StyledEnterCodeButton onClick={onClickSubmitCode} type="submit" color="danger" 
+                            size="sm" >
+                            {isFetching?(<span>인증코드 전송중..</span>):(<span>인증코드 입력</span>)}
+                        </StyledEnterCodeButton>}
+                        {registerState===TYPE_PASSWORD&&<StyledButton onClick={onClickRegister} type="submit" color="danger" 
+                            size="sm" >
+                            {isFetching?(<span>user 정보 등록중..</span>):(<span>Register</span>)}
+                        </StyledButton>}
+                    </StyledButtonWrap>
+                    <StyledButtonWrap>
+                        <StyledPTag>
+                            Already have the account? Login now!
+                        </StyledPTag>
+                    </StyledButtonWrap>
+                    <StyledButtonWrap>
+                        <Link className="d-block text-center mb-4" to="login">Enter the account</Link>
+                    </StyledButtonWrap>
+                </form>
+            </Container>
+            <footer className="auth-footer">
                 {new Date().getFullYear()} &copy; Light Blue Template - React Admin Dashboard Template Made by <a href="https://flatlogic.com" rel="noopener noreferrer" target="_blank">Flatlogic LLC</a>.                    
-                </footer>
-            </div>
-        );
-    }
+            </footer>
+        </div>
+    );
 }
-
+/* 
 function mapStateToProps(state) {
     return {
         isFetching: state.register.isFetching,
         errorMessage: state.register.errorMessage,
     };
-}
+} */
 
-export default withRouter(connect(mapStateToProps)(Register));
+export default withRouter(Register);
 

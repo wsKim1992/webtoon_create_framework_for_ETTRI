@@ -32,7 +32,7 @@ import BurgerIcon from "../Icons/HeaderIcons/BurgerIcon";
 import SearchIcon from "../Icons/HeaderIcons/SearchIcon";
 import ArrowIcon from "../Icons/HeaderIcons/ArrowIcon";
 
-import { logoutUser } from "../../actions/user";
+import { logoutUser,requestLogout } from "../../actions/user";
 import {
   openSidebar,
   closeSidebar,
@@ -97,7 +97,7 @@ class Header extends React.Component {
   }
 
   doLogout() {
-    this.props.dispatch(logoutUser());
+    this.props.dispatch(requestLogout());
   }
 
   toggleMessagesDropdown() {
@@ -154,7 +154,7 @@ class Header extends React.Component {
             </Button>
           </NavItem> */}
           <NavItem as="li" className={s.saveButtonWrap}>
-            웹툰 캐릭터 선화 제작 Tool
+            웹툰 캐릭터 선화 제작 프레임워크
             {/* <Button>
               <FontAwesomeIcon icon={faSave}/> Save
             </Button> */}
@@ -173,10 +173,10 @@ class Header extends React.Component {
               isOpen={this.state.settingsOpen}
               toggle={this.toggleSettingsDropdown}
             >
-              <DropdownToggle nav className={`${s.navItem} text-white`}>
+              {/* <DropdownToggle nav className={`${s.navItem} text-white`}>
                 <SettingsIcon addId='header-settings' className={s.headerIcon} />
               </DropdownToggle>
-              <DropdownMenu className={`${s.dropdownMenu} ${s.settings}`}>
+              <DropdownMenu className={`${s.dropdownMenu} ${s.settings}`}> 
                 <h6>Sidebar on the</h6>
                 <ButtonGroup size="sm">
                   <Button
@@ -219,7 +219,7 @@ class Header extends React.Component {
                     Hide
                   </Button>
                 </ButtonGroup>
-              </DropdownMenu>
+                  </DropdownMenu>*/}
             </Dropdown>
             <Dropdown
               className="d-none d-sm-block"
@@ -227,7 +227,7 @@ class Header extends React.Component {
               isOpen={this.state.supportOpen}
               toggle={this.toggleSupportDropdown}
             >
-              <DropdownToggle nav className={`${s.navItem} text-white`}>
+              {/* <DropdownToggle nav className={`${s.navItem} text-white`}>
                 <BellIcon className={s.headerIcon} />
                 <div className={s.count}></div>
               </DropdownToggle>
@@ -267,12 +267,11 @@ class Header extends React.Component {
                   </div>
                 </DropdownItem>
                 <DropdownItem>
-                  {/* eslint-disable-next-line */}
                   <a href="#" className="text-white">
                     See all tickets <ArrowIcon className={s.headerIcon} maskName="bellArrow" />
                   </a>
                 </DropdownItem>
-              </DropdownMenu>
+              </DropdownMenu> */}
             </Dropdown>
             <NavItem>
               <NavLink

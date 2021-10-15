@@ -12,5 +12,36 @@ module.exports = function(app){
             target:'http://localhost:8001',
             changeOrigin:true
         })
+    ),
+    app.use(
+        proxy('/static/sample/sample_img/sample1_imgToPen',{
+            target:'http://localhost:8001',
+            changeOrigin:true
+        })
+    ),
+    app.use(
+        proxy('/static/sample/sample_img/sample2_simpleContiToPen',{
+            target:'http://localhost:8001',
+            changeOrigin:true
+        })
+    ),
+    app.use(
+        proxy('/static/sample/sample_img/sample3_detailContiToPen',{
+            target:'http://localhost:8001',
+            changeOrigin:true
+        })
+    ),
+    app.use(
+        proxy('/static/gif',{
+            target:'http://localhost:8001',
+            changeOrigin:true
+        }) 
+    ),
+    app.use(
+        '/user',
+        proxy({
+            target:'http://localhost:9993',
+            changeOrigin:true
+        })
     )
 }

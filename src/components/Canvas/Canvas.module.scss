@@ -41,7 +41,7 @@
 }
 
 .canvasWrap{
-    position:absolute;
+    position:relative;
     margin-left:50px;
     width:85.4%;
     height:auto;
@@ -85,15 +85,15 @@
 
         .btnListWrap{
             width:100%;
-            height:auto;
+            height:30px;
             display: flex;
             flex-direction: row;
             justify-content: space-around;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 2.5px;
             
             .historyBtnListWrap{
-                height:35px;
+                height:85%;
                 width:15%;
                 display:flex;
                 flex-direction: row;
@@ -121,7 +121,7 @@
                 }
             }
             .inputLabelBtnWrap{
-                height:30px;
+                height:85.5%;
                 width:22.5%;
                 button{
                     font-size: 10.5px;
@@ -147,12 +147,78 @@
             }
         }
         .canvas{
+            position:relative;
             border:1px solid #000;
             width:100%;
             height:720px;
             background-color: #fff;
         }
     }
-    
+    .canvasOptionWrap{
+        position:absolute;
+        top:35px;right:-10%;
+        width:10%;
+        height:auto;
+        border-radius: 10px;
+        background-color: #0f0544;
+        font-size: 11.5px;
+        
+        .canvasOption{
+            text-align: left;
+            width:100%;
+            height:auto;
+            .optionListWrap{
+                li{
+                    p{
+                        display:flex;
+                        flex-direction: row;
+                        justify-content:left;
+                        align-items: center;
+                        width:100%;height:100%;
+                        margin:0;
+                        input[type=radio]{display:none;}
+                        .chooseObjectOrHuman{
+                            display:block;
+                            height:18.5px;width:100%;   
+                            label{
+                                display:inline-block;
+                                height:100%;width:49%;
+                                border-radius: 5.5px;
+                                padding:0;
+                                text-align: center;
+                                font-size: 8.6px;
+                                background-color: #0f0544;
+                                border: 0;margin:0;
+                            }
+                        }
+                        span{
+                            display:inline-block;
+                            width: 11.5px;height:11.5px;
+                        }
+                        label{margin: 0 0 0 6.4%;}
+                    }
+                }
+                
+            }
+            .changePenLineWrap{
+                li{
+                    padding:0;
+                    width:100%;
+                    background-color:#0f0550;
+                    input[type=radio]{display:none;}
+                    label{
+                        padding:3.5px 3.5px 3.5px 3.5px; 
+                        display:block;
+                        width:75%;height:100%;
+                        
+                        margin-left:25%;
+                    }
+                }
+            }
+                
+        }
+    }
 }
+
+
 

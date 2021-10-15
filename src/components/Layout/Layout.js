@@ -1,8 +1,9 @@
 import React,{createContext, useRef,useState, useReducer,useMemo, useEffect} from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { Switch, Route, withRouter, Redirect } from 'react-router';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
+/* import {BrowserRouter} from 'react-router-dom';
+import { TransitionGroup, CSSTransition } from 'react-transition-group'; */
 import Hammer from 'rc-hammerjs';
 import TableStatic from '../../pages/tables/static';
 /* import MapsGoogle from '../../pages/components/maps/google';
@@ -24,6 +25,7 @@ export const actions={
   CHANGE_MODE : "change_mode",
   CHANGE_BACKGROUND_IMG:"change_background_img",
   CHANGE_SRC:"change_src",
+  CHANGE_TO_SAMPLE:"change_to_sample"
 }
 
 //canvas 에 그릴때 pen의 모드& canvas의 상태를 설정해주는 변수 
@@ -35,6 +37,7 @@ export const modes = {
 }
 
 const InitialState = {
+  isSample:false,
   pen:{
     mode:modes.BRUSH,
     lineWidth:4,
@@ -51,11 +54,9 @@ const InitialState = {
   }
 }
 
-export const PenManagerContext = createContext({pen:InitialState.pen
+export const PenManagerContext = createContext({isSample:InitialState.isSample,pen:InitialState.pen
   ,history:InitialState.history
   ,penStateDispatch:()=>{}});
-
-
 
 const penReducer = (state,action)=>{
   const type = action.type;
@@ -118,21 +119,31 @@ const penReducer = (state,action)=>{
       pen = index===1? {...state.pen,src1Scale:scale}:{...state.pen,src2Scale:scale};
       return {...state,pen}
     }
+    case actions.CHANGE_TO_SAMPLE:{
+      const {bs64}=action;
+      const isSample = !state.isSample;
+      const newHistory = {...state.history,src1History:[bs64]};
+      const pen = {...state.pen,src1:bs64}
+      return {...state,isSample,history:newHistory,pen};
+    }
     default:{
       return{...state}
     }
   }
 }
 
-const Layout =(props)=> {
+const Layout =()=> {
   const [PenState,penStateDispatch]=useReducer(penReducer,InitialState);
   const [entireWidth,setEntireWidth]=useState(window.innerWidth);
   const [entireHeight,setEntireHeight] = useState(window.innerHeight);
-
   const wrapRef = useRef(null);
-
+  const {
+    sidebarOpened,
+    sidebarPosition,
+    sidebarVisibility,
+  }= useSelector(state=>state.navigation);
   const penData = useMemo(()=>{
-    return {penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history}
+    return {isSample:PenState.isSample,penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history}
   },[PenState])
 
   useEffect(()=>{
@@ -146,8 +157,8 @@ const Layout =(props)=> {
     <div
       className={[
         s.root,
-        'sidebar-' + props.sidebarPosition,
-        'sidebar-' + props.sidebarVisibility,
+        'sidebar-' + sidebarPosition,
+        'sidebar-' + sidebarVisibility,
       ].join(' ') }
     >
       <div className={s.wrap} style={{width:entireWidth*0.971,height:entireHeight}}>
@@ -157,19 +168,21 @@ const Layout =(props)=> {
             <main className={s.content} style={{width:entireWidth*0.971}}>
               <Sidebar sidebarWidth={parseFloat(entireWidth*0.03)}/>
               <CanvasWrap canvasWrapWidth={entireWidth*0.971} canvasWrapHeight={entireHeight*0.936}/>
-              
-              <TransitionGroup>
+              <TableStatic/>
+              {/* <TransitionGroup>
                 <CSSTransition
                   key={props.location.key}
                   classNames="fade"
                   timeout={200}
                 >
-                  <Switch>
-                    <Route path="/app/main" exact render={() => <Redirect to="/app/tables" />} />
-                    <Route path="/app/tables" exact component={TableStatic} />
-                  </Switch>
+                  <BrowserRouter>
+                    <Switch>
+                      <Route path="/app/main" exact render={() => <Redirect to="/app/tables" />} />
+                      <Route path="/app/tables" exact component={TableStatic} />
+                    </Switch>
+                  </BrowserRouter> 
                 </CSSTransition>
-              </TransitionGroup>
+              </TransitionGroup> */}
             </main>
           </Hammer>
         </PenManagerContext.Provider>
@@ -187,4 +200,6 @@ function mapStateToProps(store) {
   };
 }
 
-export default withRouter(connect(mapStateToProps)(Layout));
+export default withRouter(Layout);
+
+//export default withRouter(connect(mapStateToProps)(Layout));

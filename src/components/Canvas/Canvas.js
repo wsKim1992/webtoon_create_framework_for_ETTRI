@@ -2,11 +2,12 @@ import React,{useState,useCallback,useContext,useMemo,memo,useRef, useEffect,for
 import s from './Canvas.module.scss';
 import { actions,modes,PenManagerContext } from '../Layout/Layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUndo,faRedo,faImage,faSave, faSearchMinus, faSearchPlus} from '@fortawesome/free-solid-svg-icons';
-import { Button } from 'reactstrap';
+import { faChevronLeft,faChevronRight,faUndo,faRedo,faImage,faSave, faSearchMinus, faSearchPlus} from '@fortawesome/free-solid-svg-icons';
+import { Button} from 'reactstrap';
 import Input from 'reactstrap/lib/Input';
 import Label from 'reactstrap/lib/Label';
-
+import { sampleContext } from './CanvasWrap';
+import { onProgressContext } from './CanvasWrap';
 const drawImage = (src,canvasRef,canvasCtx)=>{
     let img = new Image();
     img.src=src;
@@ -27,14 +28,22 @@ const Canvas = memo(({index,canvasWidth})=>{
     const btnListWrapRef = useRef(null);
     const [canvasCtx,setCanvasCtx] = useState(null);
     const [isDraw,setIsDraw]=useState(false);
-    const {pen,history,penStateDispatch}=useContext(PenManagerContext);
+    const {pen,history,penStateDispatch,isSample}=useContext(PenManagerContext);
     const srcHistory = index===1?history.src1History:history.src2History;
     const [offset,setOffset]=useState(0);
     const [prevX,setPrevX] = useState(0);
     const [prevY,setPrevY] = useState(0);
     const [startX,setStartX] = useState(0);
     const [startY,setStartY] = useState(0);
-
+    /* const sampleImgList= useRef(['sample1_imgToPen/1_input.png','sample1_imgToPen/2_input.png'
+    ,'sample1_imgToPen/3_input.png','sample1_imgToPen/4_input.png'
+    ,'sample1_imgToPen/5_input.png','sample1_imgToPen/6_input.png'
+    ,'sample2_simpleContiToPen/1_input.png','sample2_simpleContiToPen/2_input.png'
+    ,'sample2_simpleContiToPen/3_input.png','sample3_detailContiToPen/1_input.png'
+    ,'sample3_detailContiToPen/2_input.png','sample3_detailContiToPen/3_input.png']);
+    const [sampleImgOffset,setSampleImgOffset] = useState(0); */
+    const {sampleStateDispatch,sampleImgList,sampleImgOffset}=useContext(sampleContext);
+    const {onProgress} = useContext(onProgressContext);
     const canvasFunctionList={
         [modes.BRUSH]:{
             mouseDown:(e)=>{
@@ -56,7 +65,6 @@ const Canvas = memo(({index,canvasWidth})=>{
                 e.preventDefault();
                 setIsDraw(false);
                 setOffset(prevOffset=>prevOffset+1);
-                
                 penStateDispatch({type:actions.CHANGE_SRC,offset,index,bs64:canvasRef.current.toDataURL('image/jpeg')});
             },
         },
@@ -138,7 +146,6 @@ const Canvas = memo(({index,canvasWidth})=>{
             mouseDown:(e)=>{
                 const {offsetX,offsetY}=e.nativeEvent;
                 if(!isDraw){
-                    console.log("start draw polygon")
                     canvasCtx.beginPath();
                     canvasCtx.moveTo(offsetX,offsetY);
                     setIsDraw(true);
@@ -189,20 +196,48 @@ const Canvas = memo(({index,canvasWidth})=>{
             }
             fileReader.readAsDataURL(file)
         }
+        e.currentTarget.value='';
     }:null
     useEffect(()=>{
-        const ctx = canvasRef.current.getContext('2d',{alpha:true});
-        console.log(`canvas Width : ${canvasWidth}`)
-        canvasRef.current.width = canvasWidth;
-        canvasRef.current.height = canvasWidth;
+        if(canvasRef.current){
+            const ctx = canvasRef.current.getContext('2d',{alpha:true});
+            console.log(`canvas Width : ${canvasWidth}`);
+            canvasRef.current.width = canvasWidth;
+            canvasRef.current.height = canvasWidth;
 
-        setCanvasCtx(ctx);
-        ctx.fillStyle='#fff';
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
-        penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
+            setCanvasCtx(ctx);
+            ctx.fillStyle='#fff';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
+            //sample 이미지 1번 canvas에 반영되게 하기..
+            if(index===1){
+                let img = new Image();  
+                img.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
+                img.onload = ()=>{
+                    canvasRef.current.getContext('2d').drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
+                    penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
+                }
+            }else{
+                penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
+            }
+        }
     },[])
+
+    useEffect(()=>{
+        console.log(`onProgress : ${onProgress}`);
+    },[onProgress])
+
+    useEffect(()=>{
+        let tempImg = new Image();  
+        tempImg.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
+        tempImg.onload = ()=>{
+            let tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 720;tempCanvas.height = 720;
+            tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
+            penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
+        }
+    },[sampleImgList,sampleImgOffset])
 
     useEffect(()=>{
         const ctx = canvasRef.current.getContext('2d',{alpha:true});
@@ -218,12 +253,15 @@ const Canvas = memo(({index,canvasWidth})=>{
         const src = index===1?pen.src1:pen.src2;
         const tmpCanvas = getTempCanvas(src,canvasRef.current.width,canvasRef.current.height);
         const scale = index===1?pen.src1Scale:pen.src2Scale;
-        console.log(`${scale}`);
+        console.log(`index : ${index} scale : ${scale}`);
         const w = canvasRef.current.width;
         const h = canvasRef.current.height;
-        let sw = scale>=1? w/scale:w*scale;
-        let sh = scale>=1? h/scale:h*scale;
-        canvasRef.current.getContext('2d').lineWidth*=scale
+        let sw = w/scale;
+        let sh = h/scale;
+        console.log(`w : ${w} , h : ${h}`);
+        console.log(`sw : ${sw} , sh : ${sh}`);
+        //canvasRef.current.getContext('2d').lineWidth*=scale;
+        // scale 이 줄었는 늘었는지 확인 할 수 있는 변수 & 로직이 필요...
         canvasRef.current.getContext('2d').drawImage(tmpCanvas,0,0,sw,sh,0,0,w,h);
     },[index===1?pen.src1Scale:pen.src2Scale])
 
@@ -255,6 +293,38 @@ const Canvas = memo(({index,canvasWidth})=>{
         penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'minus'});
     }
 
+    const onConvertToSample=(e)=>{
+        e.preventDefault();
+        if(!isSample){
+            let tempImg = new Image();
+            const src = `/static/sample/sample_img/${sampleImgList[0]}`;
+            tempImg.src = src;
+            console.log(src);
+            tempImg.onload = ()=>{
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 720;tempCanvas.height = 720;
+                tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
+                penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
+            }
+        }else{
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 720; tempCanvas.height = 720;
+            tempCanvas.getContext('2d').fillStyle='#fff';
+            tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
+            penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
+        }
+    }
+
+    const onClickToNextSample=(e)=>{
+        e.preventDefault();
+        sampleStateDispatch({type:'change_offset',direction:'forth'});
+    }
+
+    const onClickToPrevSample=(e)=>{
+        e.preventDefault();
+        sampleStateDispatch({type:'change_offset',direction:'back'});
+    }
+
     return(
         <div>
             <div ref={btnListWrapRef} className={s.btnListWrap}>
@@ -282,6 +352,13 @@ const Canvas = memo(({index,canvasWidth})=>{
                         </Button>
                     </div>
                 </div>
+                {/* {index===1&&<div className={s.historyBtnListWrap}>
+                    <div className={s.historyBtnWrap} style={{width:'100%'}}>
+                        <Button onClick={onConvertToSample} style={{width:'100%',fontSize:7.5}}>
+                            To Sample
+                        </Button>
+                    </div>
+                </div>} */}
                 <div className={s.inputLabelBtnWrap}>
                     <Button>
                         {index===1
@@ -298,17 +375,41 @@ const Canvas = memo(({index,canvasWidth})=>{
                 </div>
             </div>
             {index===1&&<Input id={s.loadImage} onChange={onChangeInputFile} type="file" accept="image/*"/>}
-            
-            <canvas 
-            style={{width:canvasWidth,height:canvasWidth}}
-            id={`canvas${index}`}
-            className={s.canvas}
-            onDrag={(e)=>{console.log(e)}}
-            onMouseDown={canvasFunctionList[pen.mode].mouseDown}
-            onMouseUp={canvasFunctionList[pen.mode].mouseUp}
-            onMouseMove={canvasFunctionList[pen.mode].mouseMove}
-            ref={canvasRef} className={s.canvas}/>
-           
+            <div>
+                {  
+                    index===1&&
+                    <span style={{backgroundColor:'#0f0544',position:"absolute",top:'45%',left:'1.5%',zIndex:'20'}}>
+                        <Button style={{backgroundColor:'#0f0544',border:'none'}} onClick={onClickToPrevSample}>
+                            <FontAwesomeIcon icon={faChevronLeft}/>
+                        </Button>
+                    </span>
+                }
+                <canvas 
+                style={{width:canvasWidth,height:canvasWidth}}
+                id={`canvas${index}`}
+                className={s.canvas}
+                onMouseDown={canvasFunctionList[pen.mode].mouseDown}
+                onMouseUp={canvasFunctionList[pen.mode].mouseUp}
+                onMouseMove={canvasFunctionList[pen.mode].mouseMove}
+                ref={canvasRef} className={s.canvas}/>
+                {
+                    index===1&&
+                    <span style={{backgroundColor:'#0f0544',position:"absolute",top:'45%',right:'1.5%',zIndex:'20'}}>
+                        <Button style={{backgroundColor:'#0f0544',border:'none'}} onClick={onClickToNextSample}>
+                            <FontAwesomeIcon icon={faChevronRight}/>
+                        </Button>
+                    </span>
+                }
+                {
+                    index===2&&
+                    onProgress&&
+                    (
+                        <div style={{width:canvasWidth,height:canvasWidth,position:"absolute",top:0,left:0,zIndex:'20'}}>
+                            <img src= "/static/gif/giphy.gif" style={{ color:'#0f0544',display:'block',width:'100%',height:'100%'}}/>
+                        </div>
+                    )
+                }
+            </div>
         </div>
     )
 })
