@@ -30,7 +30,6 @@ const ListGroup = memo(({sidebarWidth,toolInfo,color,id})=>{
         }
         dispatch({type:evtType,id});
         if(!haveChild&&actImmediatly===undefined&&actionType){
-            console.log(mode);
             penStateDispatch({type:actionType,mode});
         }else{
             if(actImmediatly){

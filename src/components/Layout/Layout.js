@@ -1,18 +1,17 @@
 import React,{createContext, useRef,useState, useReducer,useMemo, useEffect} from 'react';
 import PropTypes from 'prop-types';
-import { connect, useSelector } from 'react-redux';
-import { Switch, Route, withRouter, Redirect } from 'react-router';
+
+import { useSelector } from 'react-redux';
+import { withRouter} from 'react-router';
 /* import {BrowserRouter} from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group'; */
 import Hammer from 'rc-hammerjs';
-import TableStatic from '../../pages/tables/static';
 /* import MapsGoogle from '../../pages/components/maps/google';
 import CoreTypography from '../../pages/typography'; */
 /* import Dashboard from '../../pages/dashboard'; */
 
 import Header from '../Header';
 import Sidebar from '../Sidebar';
-import { openSidebar, closeSidebar } from '../../actions/navigation';
 import s from './Layout.module.scss';
 import CanvasWrap from '../Canvas/CanvasWrap';
 
@@ -25,7 +24,9 @@ export const actions={
   CHANGE_MODE : "change_mode",
   CHANGE_BACKGROUND_IMG:"change_background_img",
   CHANGE_SRC:"change_src",
-  CHANGE_TO_SAMPLE:"change_to_sample"
+  CHANGE_TO_SAMPLE:"change_to_sample",
+  ON_PROGRESS:"on_progress",
+  INIT:"init",
 }
 
 //canvas 에 그릴때 pen의 모드& canvas의 상태를 설정해주는 변수 
@@ -37,7 +38,8 @@ export const modes = {
 }
 
 const InitialState = {
-  isSample:false,
+  
+  onProgress:false,
   pen:{
     mode:modes.BRUSH,
     lineWidth:4,
@@ -61,6 +63,11 @@ export const PenManagerContext = createContext({isSample:InitialState.isSample,p
 const penReducer = (state,action)=>{
   const type = action.type;
   switch(type){
+    case actions.ON_PROGRESS:{
+      console.log(state.onProgress);
+      return {...state,onProgress:true}
+
+    }
     case actions.CHANGE_MODE:{
       const mode = action.mode;
       let pen = {}
@@ -82,7 +89,7 @@ const penReducer = (state,action)=>{
       src1History.push(bs64);
       history = {...state.history,src1History};
       const newPen = {...state.pen,src1:bs64};
-      return {...state,pen:newPen,history};
+      return {...state,pen:newPen,history,isSample:action.isSample};
     }
     case actions.CHANGE_STROKE_STYLE:{
       const strokeStyle=action.strokeStyle;
@@ -107,7 +114,8 @@ const penReducer = (state,action)=>{
       srcHistory.push(src);
       const pen = index===1?{...state.pen,src1:src}:{...state.pen,src2:src};
       const newHistory = index===1?{...state.history,src1History:srcHistory}:{...state.history,src2History:srcHistory}
-      return {...state,pen,history:newHistory};
+      if(state.onProgress)return{...state,pen,history:newHistory,onProgress:false}
+      else return {...state,pen,history:newHistory};
     }
     case actions.CHANGE_SCALE:{
       const {index,scaleType}=action;
@@ -121,10 +129,17 @@ const penReducer = (state,action)=>{
     }
     case actions.CHANGE_TO_SAMPLE:{
       const {bs64}=action;
-      const isSample = !state.isSample;
+      const isSample = true;
       const newHistory = {...state.history,src1History:[bs64]};
       const pen = {...state.pen,src1:bs64}
       return {...state,isSample,history:newHistory,pen};
+    }
+    case actions.INIT:{
+      const history = {...state.history};
+      history.src1History=[];
+      history.src2History=[];
+      const pen = Object.assign({},InitialState.pen);
+      return {...state,isSample:false,history,pen}
     }
     default:{
       return{...state}
@@ -142,9 +157,12 @@ const Layout =()=> {
     sidebarPosition,
     sidebarVisibility,
   }= useSelector(state=>state.navigation);
+
   const penData = useMemo(()=>{
-    return {isSample:PenState.isSample,penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history}
+    return {isSample:PenState.isSample,penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history,onProgress:PenState.onProgress}
   },[PenState])
+
+  const {isFetching,userInfo}=useSelector(state=>state.auth);
 
   useEffect(()=>{
     window.addEventListener("resize",(e)=>{
@@ -153,7 +171,9 @@ const Layout =()=> {
     })
   },[])
 
+
   return (
+
     <div
       className={[
         s.root,
@@ -161,45 +181,22 @@ const Layout =()=> {
         'sidebar-' + sidebarVisibility,
       ].join(' ') }
     >
-      <div className={s.wrap} style={{width:entireWidth*0.971,height:entireHeight}}>
-      <PenManagerContext.Provider value={penData}>
-        <Header headerWidth={entireWidth*0.971} />
-          <Hammer >
-            <main className={s.content} style={{width:entireWidth*0.971}}>
-              <Sidebar sidebarWidth={parseFloat(entireWidth*0.03)}/>
-              <CanvasWrap canvasWrapWidth={entireWidth*0.971} canvasWrapHeight={entireHeight*0.936}/>
-              <TableStatic/>
-              {/* <TransitionGroup>
-                <CSSTransition
-                  key={props.location.key}
-                  classNames="fade"
-                  timeout={200}
-                >
-                  <BrowserRouter>
-                    <Switch>
-                      <Route path="/app/main" exact render={() => <Redirect to="/app/tables" />} />
-                      <Route path="/app/tables" exact component={TableStatic} />
-                    </Switch>
-                  </BrowserRouter> 
-                </CSSTransition>
-              </TransitionGroup> */}
-            </main>
-          </Hammer>
-        </PenManagerContext.Provider>
-      </div>
+      {!isFetching&&userInfo&&
+        <div className={s.wrap} style={{width:entireWidth*0.971,height:entireHeight}}>
+          <PenManagerContext.Provider value={penData}>
+            <Header headerWidth={entireWidth*0.971} />
+              <Hammer >
+                <main className={s.content} style={{width:entireWidth*0.971}}>
+                    <Sidebar sidebarWidth={parseFloat(entireWidth*0.03)}/>
+                    <CanvasWrap canvasWrapWidth={entireWidth*0.971} canvasWrapHeight={entireHeight*0.936}/>
+                </main>
+              </Hammer>
+          </PenManagerContext.Provider>
+        </div>}
     </div>
   );
   
 }
 
-function mapStateToProps(store) {
-  return {
-    sidebarOpened: store.navigation.sidebarOpened,
-    sidebarPosition: store.navigation.sidebarPosition,
-    sidebarVisibility: store.navigation.sidebarVisibility,
-  };
-}
 
 export default withRouter(Layout);
-
-//export default withRouter(connect(mapStateToProps)(Layout));

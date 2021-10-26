@@ -1,9 +1,20 @@
 import axios from "axios";
 
+export const LOGIN_REQUEST = 'LOGIN_REQUEST';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAILURE = 'LOGIN_FAILURE';
 export const LOGOUT_REQUEST = 'LOGOUT_REQUEST';
 export const LOGOUT_SUCCESS = 'LOGOUT_SUCCESS';
+export const LOGOUT_FAILURE = 'LOGOUT_FAILURE';
+export const INIT_INFO = 'INIT_INFO';
+
+export const init=()=>{
+    return {type:INIT_INFO}
+}
+
+export const requestLogin=()=>{
+    return {type:LOGIN_REQUEST}
+}
 
 export function receiveLogin(userInfo) {
     return {
@@ -19,25 +30,75 @@ export function loginError(payload) {
     };
 }
 
-export function requestLogout() {
+export function loginUser(creds) {
+    return (dispatch) => {
+        
+        
+        const dataToSend={
+            email:creds.email,
+            password:creds.password
+        }
+        
+        dispatch(requestLogin());
+        const headers = {'content-type':'application/json','Origin':'http://1.201.8.82:9992'};
+        axios.post('/user/login',dataToSend,headers)
+        .then(resp=>{
+            const {success,message,userInfo}=resp.data;
+            if(success){
+                localStorage.setItem('authenticated',true);
+                if(resp.data?.token)localStorage.setItem('token',resp.data.token);
+                axios.defaults.headers.post['Content-Type'] ='application/json;charset=utf-8';
+                axios.defaults.headers.post['Access-Control-Allow-Origin'] = 'http://1.201.8.82:9992';
+                return dispatch(receiveLogin(userInfo));
+            }else{
+                dispatch(loginError(message));
+            }
+        })
+        .catch(err=>{
+            console.error(err);
+            dispatch(loginError('접속에러!'));
+        })
+    }
+}
+
+function receiveLogout() {
+    return {
+        type: LOGOUT_SUCCESS,
+    };
+}
+
+export const logoutError=(payload)=>{
+    return {
+        type: LOGOUT_FAILURE,payload
+    }
+}
+
+const requestLogout=()=>{
+    return{type:LOGOUT_REQUEST}
+}
+
+export function logoutUser({history}) {
     console.log('logoutUser');
     if(localStorage.getItem('token')){
-        return (dispatch) => {
+        return (dispatch,getState) => {
+            dispatch(requestLogout());
             axios.post('/user/logout')
             .then(resp=>{
                 const {success,message}=resp.data;
-                console.log(message);
                 if(success){
+                    axios.defaults.headers.post['Content-Type'] = null;
+                    axios.defaults.headers.post['Access-Control-Allow-Origin'] = null;
                     localStorage.removeItem('authenticated');
                     localStorage.removeItem('token');
                     dispatch(receiveLogout());
+                    history.push('/login');
                 }else{
-                    dispatch(loginError(message));
+                    dispatch(logoutError(message));
                 }
             })
             .catch(err=>{
                 console.error(err);
-                alert('서버 점검중..');
+                dispatch(logoutError('서버 점검중..'));
             })
         };
     }else{
@@ -47,53 +108,8 @@ export function requestLogout() {
     }
 }
 
-export function receiveLogout() {
-    return {
-        type: LOGOUT_SUCCESS,
-    };
-}
 
-// Logs the user out
-export function logoutUser() {
-    return{
-        type:LOGOUT_SUCCESS
-    }
-}
 
-export function loginUser(creds) {
-    return (dispatch) => {
-        const dataToSend={
-            email:creds.email,
-            password:creds.password
-        }
-        const headers = {'content-type':'application/json'};
-        
-        axios.post('/user/login',dataToSend,headers)
-        .then(resp=>{
-            const {success,message,userInfo}=resp.data;
-            console.log(message)
-            if(success){
-                localStorage.setItem('authenticated',true);
-                if(resp.data?.token)localStorage.setItem('token',resp.data.token);
-                return dispatch(receiveLogin(userInfo));
-            }else{
-                alert(message);
-                dispatch(loginError(message));
-            }
-        })
-        .catch(err=>{
-            console.error(err);
-            alert('서버 점검중..');
-            dispatch(loginError('서버 점검중..'));
-        })
-        /* dispatch(receiveLogin());
 
-        if (creds.email.length > 0 && creds.password.length > 0) {
-            localStorage.setItem('authenticated', true)
-        } else {
-            dispatch(loginError('Something was wrong. Try again'));
-        } */
-    }
-}
 
 

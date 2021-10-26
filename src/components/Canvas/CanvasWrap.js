@@ -6,12 +6,12 @@ import {Input,Label,Button} from 'reactstrap';
 import axios from 'axios';
 import ListGroup from 'reactstrap/lib/ListGroup';
 import ListGroupItem from 'reactstrap/lib/ListGroupItem';
-import { useHistory } from 'react-router-dom';
+
 const sampleImgList1= ['sample1_imgToPen/1_input.png','sample1_imgToPen/2_input.png'
     ,'sample1_imgToPen/3_input.png','sample1_imgToPen/4_input.png'
     ,'sample1_imgToPen/5_input.png','sample1_imgToPen/6_input.png'];
 
-const sampleImgList2=[
+const sampleImgList2=['',
     'sample2_simpleContiToPen/1_input.png','sample2_simpleContiToPen/2_input.png'
     ,'sample2_simpleContiToPen/3_input.png'
 ]
@@ -22,17 +22,15 @@ const sampleImgList3=[
 ]
 
 
-const initialSampleState = {sampleImgList:sampleImgList1,sampleImgOffset:0}
+const initialSampleState = {apiType:'/request_image',sampleImgList:sampleImgList1,sampleImgOffset:0}
 
 export const sampleContext = createContext({sampleStateDispatch:()=>{},sampleState:initialSampleState})
-export const onProgressContext = createContext({onProgress:false});
 
 const sampleImgReducer=(state,action)=>{
     const type = action.type;
     switch(type){
         case 'change_dir':{
             const apiType = action.apiType;
-            console.log(`apiType : ${apiType}`);
             let sampleImgList;
             if(apiType==="/request_image"){
                 sampleImgList = sampleImgList1;
@@ -41,23 +39,26 @@ const sampleImgReducer=(state,action)=>{
             }else{
                 sampleImgList = sampleImgList3;
             }
-            return {...state,sampleImgList,sampleImgOffset:0}
+            return {...state,sampleImgList,sampleImgOffset:0,apiType}
         }
         case 'change_offset':{
+            console.log('change_offset');
             const arrLen = state.sampleImgList.length;
             const offsetNow = state.sampleImgOffset;
             const direction = action.direction;
             if(direction==='forth'){
                 const sampleImgOffset = offsetNow+1>=arrLen?0:offsetNow+1;
-                console.log(`sampleImgOffset:${sampleImgOffset}`)
                 return {...state,sampleImgOffset};
             }else if(direction==='back'){
                 const sampleImgOffset = offsetNow-1<0?arrLen-1:offsetNow-1;
-                console.log(`sampleImgOffset:${sampleImgOffset}`)
                 return {...state,sampleImgOffset};
             }
+            break;
         }
-        default:return {...state};
+        case 'init':{
+            return {...state,sampleImgOffset:0};
+        }
+        default:return state;
     }
 }
 
@@ -66,17 +67,17 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
     const {pen,penStateDispatch}=useContext(PenManagerContext);
     const canvasWrapRef = useRef(null);
     const [srcJson , setSrcJson] = useState({});
-    const [onProgress,setOnProgress] = useState(false);
     useEffect(()=>{ 
         document.querySelector(".label").style.backgroundColor="#0390fc";
+        return ()=>{
+            sampleStateDispatch({type:'init'});
+        }
     },[])
 
     const sampleSrcData = useMemo(()=>{
-        return {sampleStateDispatch,sampleImgList:sampleState.sampleImgList,sampleImgOffset:sampleState.sampleImgOffset}
+        return {sampleStateDispatch,sampleImgList:sampleState.sampleImgList,sampleImgOffset:sampleState.sampleImgOffset,apiType:sampleState.apiType}
     },[sampleState])
-    const onProgressFlag = useMemo(()=>{
-        return {onProgress}
-    },[onProgress])
+
     const onClickLabel = (evt)=>{
         let labelList = document.querySelectorAll(".label")
         labelList.forEach(l=>{
@@ -85,18 +86,18 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
         evt.currentTarget.style.backgroundColor="#0390fc";
         setTimeout(()=>{
             const apiType = document.querySelector('input[name="selectApiAddr"]:checked').value;
+            console.log(`apiType : ${apiType}`);
             sampleStateDispatch({type:'change_dir',apiType});
         },0)
     }
 
-    const apiToServer=async(request_url)=>{
+    const apiToServer=async(request_url,funcName)=>{
         try{
             //jwt 토큰 유효성 검사 
             const confirmTokenRespHeader = {headers:{
                 'Authorization':localStorage.getItem('token'),
                 'content-type':'application/json'}
             };
-            console.log(`token : ${localStorage.getItem('token')}`);
             const confirmTokenResp = await axios.patch('/user/confirm_jwt',{},confirmTokenRespHeader);
             const {success}=confirmTokenResp.data;
             if(!success){
@@ -107,6 +108,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token);
             
             //이미지 data 를 api 서버로 전송
+            
             const decodeImgData = atob(pen.src1.split(',')[1]);
             let asciiArr = [];
             for(let i = 0 ;i<decodeImgData.length;i++){
@@ -115,30 +117,28 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             let formData = new FormData();
             const imgUpload = new Blob([new Uint8Array(asciiArr)],{'type':'image/jpeg'});
             formData.append('input_image',imgUpload);
-            
+            formData.append('function',funcName);
             const config = {
                 'content-type':'multipart/form-data',
             };
-            setOnProgress(true)
-            
+            penStateDispatch({type:actions.ON_PROGRESS});
             axios.post(request_url,formData,config)
             .then((resp)=>{
                 setSrcJson(resp.data);
+                console.log(resp.data);
                 let img = new Image();
                 img.onload = ()=>{
                     let tempCanvas = document.createElement('canvas');
                     tempCanvas.width=720;tempCanvas.height=720;
                     let tempCtx = tempCanvas.getContext('2d');
                     tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-                    penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});
+                    penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});   
                 }
-                img.src = `/${resp.data.output_modeO_path[0]}`;
-                setOnProgress(false);
+                img.src = funcName==='image2pen'?`/${resp.data.output_modeO_path[0]}`:`/${resp.data.output_path}`;
             })
             .catch(err=>{
                 if(err.response.state>=500)alert("서버 점검중..");
                 else if(err.response.state>=400)alert("입력 data 오류! .jpg,.png 파일을 업로드해주세요!");
-                setOnProgress(false);
                 return false;
             });
         }catch(err){
@@ -151,10 +151,10 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
         evt.preventDefault();
 
         const apiSelectRadio = document.querySelector('input[name="selectApiAddr"]:checked')?.value; 
-        
+        console.log(apiSelectRadio);
         switch(apiSelectRadio){
             case '/request_image':{
-                apiToServer(apiSelectRadio);
+                apiToServer(apiSelectRadio,'image2pen');
                 document.querySelector('#object').checked=true;
                 document.querySelector('input[name="withOutBackground"]').checked=false;
                 document.querySelector('input[name="chooseLineWidth"]').checked=false;
@@ -171,23 +171,26 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                 break ;
             }
             case '/request_simple_conti_to_penline':{
-                
                 setSrcJson({});
-                const inputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_input.png`;
-                const outputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_output.png`;
-             
-                const newSrc = sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].replace(inputFileName,outputFileName);
-           
-                let img = new Image();
-                img.src = `/static/sample/sample_img/${newSrc}`;
-                img.onload = ()=>{
-                    let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width=720;tempCanvas.height=720;
-                    let tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-                    penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});
+                if(sampleSrcData.sampleImgOffset>0){
+                    const inputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_input.png`;
+                    const outputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_output.png`;
+                    
+                    const newSrc = sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].replace(inputFileName,outputFileName);
+            
+                    let img = new Image();
+                    img.src = `/static/sample/sample_img/${newSrc}`;
+                    img.onload = ()=>{
+                        let tempCanvas = document.createElement('canvas');
+                        tempCanvas.width=720;tempCanvas.height=720;
+                        let tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
+                        penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});
+                    }
+                }else{
+                    //api 호출
+                    apiToServer('/request_image','conti2pen');
                 }
-                
                 break;
             }
             case '/request_complicated_conti_to_penline':{
@@ -249,7 +252,6 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
     }
 
     const onChangeCheckBackground = (e)=>{
-        console.log(e.currentTarget.checked);
         const checked = e.currentTarget.checked;
         try{
             const objectOrHuman =document.querySelector('input[name="objectOrHuman"]:checked').value;
@@ -351,17 +353,16 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                 </div>
                 <div ref={canvasWrapRef} className={s.canvasWrap}>
                     <sampleContext.Provider value={sampleSrcData}>
-                        <onProgressContext.Provider value={onProgressFlag}>
-                            <Canvas
-                                index={1} 
-                                canvasWidth = {parseFloat(canvasWrapWidth*0.35)}/>
-                            <div className={s.callApiBtnWrap}>
-                                <Button onClick={onClickTransformBtn}>
-                                    변환
-                                </Button>
-                            </div>
-                            <Canvas index={2} canvasWidth = {parseFloat(canvasWrapWidth*0.35)}/>
-                        </onProgressContext.Provider>
+                        <Canvas
+                            index={1} 
+                            canvasWidth = {parseFloat(canvasWrapWidth*0.35)}/>
+                        <div className={s.callApiBtnWrap}>
+                            <Button onClick={onClickTransformBtn}>
+                                변환
+                            </Button>
+                        </div>
+                        <Canvas index={2} canvasWidth = {parseFloat(canvasWrapWidth*0.35)}/>
+                        
                     </sampleContext.Provider>
                     <div className={s.canvasOptionWrap}>
                         <div className={s.canvasOption}>

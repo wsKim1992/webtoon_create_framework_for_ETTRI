@@ -24,9 +24,6 @@ const SubClass =memo(({keyProp,subClassname,subClassColor,highClass,isOpen})=>{
     },[mode])
     
     useEffect(()=>{
-        console.log(subClassName);
-        console.log(color);
-        console.log(highClassName);
         if(mode){
             setColor(subClassColor);
             setSubClassName(subClassname);
@@ -41,7 +38,6 @@ const SubClass =memo(({keyProp,subClassname,subClassColor,highClass,isOpen})=>{
         }
     },[mode])
     const onClickAddBtn = ()=>{
-        console.log(subClassName);
         if(subClassName===''||subClassName===undefined){
             alert("추가할 class의 이름을 입력해주세요");
             return false;
@@ -65,7 +61,6 @@ const SubClass =memo(({keyProp,subClassname,subClassColor,highClass,isOpen})=>{
     }
 
     const onChangeSubClassName = (e)=>{
-        console.log(e.target.value);
         setSubClassName(e.target.value);
     }
 

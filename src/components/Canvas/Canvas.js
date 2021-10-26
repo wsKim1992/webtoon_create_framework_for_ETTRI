@@ -7,43 +7,40 @@ import { Button} from 'reactstrap';
 import Input from 'reactstrap/lib/Input';
 import Label from 'reactstrap/lib/Label';
 import { sampleContext } from './CanvasWrap';
-import { onProgressContext } from './CanvasWrap';
+import {useSelector} from 'react-redux';
+
 const drawImage = (src,canvasRef,canvasCtx)=>{
+    
     let img = new Image();
     img.src=src;
     img.onload = ()=>{
         canvasCtx.drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
     }
+    
 }
-
+/* 
 const getTempCanvas = (src,w,h)=>{
     let img = new Image();
     img.width=w;img.height=h;
     img.src = src;
     return img;
-}
+} */
 
 const Canvas = memo(({index,canvasWidth})=>{
     const canvasRef = useRef(null);
     const btnListWrapRef = useRef(null);
     const [canvasCtx,setCanvasCtx] = useState(null);
     const [isDraw,setIsDraw]=useState(false);
-    const {pen,history,penStateDispatch,isSample}=useContext(PenManagerContext);
+    const {pen,history,penStateDispatch,onProgress}=useContext(PenManagerContext);
     const srcHistory = index===1?history.src1History:history.src2History;
     const [offset,setOffset]=useState(0);
     const [prevX,setPrevX] = useState(0);
     const [prevY,setPrevY] = useState(0);
     const [startX,setStartX] = useState(0);
     const [startY,setStartY] = useState(0);
-    /* const sampleImgList= useRef(['sample1_imgToPen/1_input.png','sample1_imgToPen/2_input.png'
-    ,'sample1_imgToPen/3_input.png','sample1_imgToPen/4_input.png'
-    ,'sample1_imgToPen/5_input.png','sample1_imgToPen/6_input.png'
-    ,'sample2_simpleContiToPen/1_input.png','sample2_simpleContiToPen/2_input.png'
-    ,'sample2_simpleContiToPen/3_input.png','sample3_detailContiToPen/1_input.png'
-    ,'sample3_detailContiToPen/2_input.png','sample3_detailContiToPen/3_input.png']);
-    const [sampleImgOffset,setSampleImgOffset] = useState(0); */
-    const {sampleStateDispatch,sampleImgList,sampleImgOffset}=useContext(sampleContext);
-    const {onProgress} = useContext(onProgressContext);
+    const {sampleStateDispatch,sampleImgList,sampleImgOffset,apiType}=useContext(sampleContext);
+    const {isFetching,userInfo}=useSelector(state=>state.auth);
+    
     const canvasFunctionList={
         [modes.BRUSH]:{
             mouseDown:(e)=>{
@@ -174,7 +171,7 @@ const Canvas = memo(({index,canvasWidth})=>{
             mouseUp:(e)=>{
                 const {offsetX,offsetY}=e.nativeEvent;
                 const dist = Math.sqrt(Math.pow((startX-offsetX),2)+Math.pow((startY-offsetY),2));
-                console.log(dist)
+        
                 if(dist<=canvasCtx.lineWidth){
                     canvasCtx.closePath();
                     canvasCtx.stroke();
@@ -187,21 +184,42 @@ const Canvas = memo(({index,canvasWidth})=>{
             }
         }
     }
+    useEffect(()=>{
+        if(index===2&&onProgress){
+            canvasCtx.fillStyle='#fff';
+            canvasCtx.fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
+        }
+    },[onProgress])
     const onChangeInputFile=index===1?(e)=>{
         const file = e.target.files[0];
         if(file&&file.type.match('image/*')){
             let fileReader = new FileReader();
-            fileReader.onload=(e)=>{
-                penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,bs64:e.target.result,offset});
+            fileReader.onload=(evt)=>{
+                let img = new Image();
+                img.src = evt.target.result;
+                img.onload = ()=>{
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width=720;tempCanvas.height=720;
+                    tempCanvas.getContext('2d').fillStyle='#fff';
+                    tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
+                    const widthOrHeight = img.width>img.height?true:false;
+                    const widthInDraw = widthOrHeight?tempCanvas.width:parseFloat(img.width/img.height)*tempCanvas.width;
+                    const heightInDraw = widthOrHeight?parseFloat(img.height/img.width)*tempCanvas.height : tempCanvas.height;
+                    const offsetLength = widthOrHeight?(tempCanvas.height-heightInDraw)/2:(tempCanvas.width-widthInDraw)/2;
+                    if(widthOrHeight){tempCanvas.getContext('2d').drawImage(img,0,offsetLength,widthInDraw,heightInDraw);}
+                    else{tempCanvas.getContext('2d').drawImage(img,offsetLength,0,widthInDraw,heightInDraw);}
+                    penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index,offset:0,bs64:tempCanvas.toDataURL('image/jpeg')});
+                }
             }
-            fileReader.readAsDataURL(file)
+            fileReader.readAsDataURL(file);
         }
         e.currentTarget.value='';
-    }:null
+    }:null;
+
     useEffect(()=>{
-        if(canvasRef.current){
+        if(!isFetching&&userInfo&&canvasRef.current){
+            
             const ctx = canvasRef.current.getContext('2d',{alpha:true});
-            console.log(`canvas Width : ${canvasWidth}`);
             canvasRef.current.width = canvasWidth;
             canvasRef.current.height = canvasWidth;
 
@@ -221,21 +239,29 @@ const Canvas = memo(({index,canvasWidth})=>{
             }else{
                 penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
             }
+            return ()=>{
+                penStateDispatch({type:actions.INIT});
+            }
         }
-    },[])
 
+    },[isFetching,userInfo])
+    
     useEffect(()=>{
-        console.log(`onProgress : ${onProgress}`);
-    },[onProgress])
-
-    useEffect(()=>{
-        let tempImg = new Image();  
-        tempImg.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
-        tempImg.onload = ()=>{
-            let tempCanvas = document.createElement('canvas');
-            tempCanvas.width = 720;tempCanvas.height = 720;
-            tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
-            penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
+        if(apiType==="/request_simple_conti_to_penline"&&sampleImgOffset===0){
+            let canvas = document.createElement('canvas');
+            canvas.width = 720; canvas.height= 720;
+            canvas.getContext('2d').fillStyle='#fff';
+            canvas.getContext('2d').fillRect(0,0,canvas.width,canvas.height);
+            penStateDispatch({type:actions.CHANGE_SRC,index:1,bs64:canvas.toDataURL('image/png')});
+        }else{
+            let tempImg = new Image();  
+            tempImg.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
+            tempImg.onload = ()=>{
+                let tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 720;tempCanvas.height = 720;
+                tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
+                penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
+            }
         }
     },[sampleImgList,sampleImgOffset])
 
@@ -249,21 +275,18 @@ const Canvas = memo(({index,canvasWidth})=>{
         drawImage(index===1?pen.src1:pen.src2,canvasRef,canvasCtx);
     },[index===1?pen.src1:pen.src2])
 
-    useEffect(()=>{
+    /* useEffect(()=>{
         const src = index===1?pen.src1:pen.src2;
         const tmpCanvas = getTempCanvas(src,canvasRef.current.width,canvasRef.current.height);
         const scale = index===1?pen.src1Scale:pen.src2Scale;
-        console.log(`index : ${index} scale : ${scale}`);
         const w = canvasRef.current.width;
         const h = canvasRef.current.height;
         let sw = w/scale;
         let sh = h/scale;
-        console.log(`w : ${w} , h : ${h}`);
-        console.log(`sw : ${sw} , sh : ${sh}`);
         //canvasRef.current.getContext('2d').lineWidth*=scale;
         // scale 이 줄었는 늘었는지 확인 할 수 있는 변수 & 로직이 필요...
         canvasRef.current.getContext('2d').drawImage(tmpCanvas,0,0,sw,sh,0,0,w,h);
-    },[index===1?pen.src1Scale:pen.src2Scale])
+    },[index===1?pen.src1Scale:pen.src2Scale]) */
 
     const onBeforeBtnClicked = (e)=>{
         e.preventDefault();
@@ -293,7 +316,7 @@ const Canvas = memo(({index,canvasWidth})=>{
         penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'minus'});
     }
 
-    const onConvertToSample=(e)=>{
+    /* const onConvertToSample=(e)=>{
         e.preventDefault();
         if(!isSample){
             let tempImg = new Image();
@@ -313,7 +336,7 @@ const Canvas = memo(({index,canvasWidth})=>{
             tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
             penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
         }
-    }
+    } */
 
     const onClickToNextSample=(e)=>{
         e.preventDefault();
@@ -324,8 +347,9 @@ const Canvas = memo(({index,canvasWidth})=>{
         e.preventDefault();
         sampleStateDispatch({type:'change_offset',direction:'back'});
     }
-
+    
     return(
+        
         <div>
             <div ref={btnListWrapRef} className={s.btnListWrap}>
                 <div className={s.historyBtnListWrap}>
@@ -352,13 +376,6 @@ const Canvas = memo(({index,canvasWidth})=>{
                         </Button>
                     </div>
                 </div>
-                {/* {index===1&&<div className={s.historyBtnListWrap}>
-                    <div className={s.historyBtnWrap} style={{width:'100%'}}>
-                        <Button onClick={onConvertToSample} style={{width:'100%',fontSize:7.5}}>
-                            To Sample
-                        </Button>
-                    </div>
-                </div>} */}
                 <div className={s.inputLabelBtnWrap}>
                     <Button>
                         {index===1

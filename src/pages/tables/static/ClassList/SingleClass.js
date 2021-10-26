@@ -17,13 +17,12 @@ const SingleClass = memo(({classTag})=>{
     const subClassList = useMemo(()=>{
         const subClassArr = [];
         Object.keys(classArr).forEach((key)=>{
-            console.log(key);
+          
             if(classArr[key].highClassName===classTag){
                 subClassArr.push({...classArr[key],'keyProp':key})}
         })
         return subClassArr;
     },[classArr])
-    console.log(subClassList);
     const onClickDelete = (e)=>{
         e.preventDefault();
         dispatch({type:DELETEHIGHCLASS,nameClass:classTag})

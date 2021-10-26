@@ -11,12 +11,22 @@ export const SEND_EMAIL_FAILED = 'SEND_EMAIL_FAILED';
 export const COMPARE_CODE='COMPARE_CODE';
 export const COMPARE_CODE_SUCCESS = 'COMPARE_CODE_SUCCESS';
 export const COMPARE_CODE_FAILED = 'COMPARE_CODE_FAILED';
-
+export const INIT = 'INIT';
 
 //registerState 값들
 export const TYPE_EMAIL = 'type_email';
 export const TYPE_CODE = 'type_code';
 export const TYPE_PASSWORD = 'type_password';
+export const FINISHED = 'finished'
+//에러코드 숫자
+export const ERROR_TYPE_EMAIL = 1;
+export const ERROR_TYPE_CODE = 2;
+export const ERROR_TYPE_PASSWORD = 4;
+
+//초기화
+export const initState=()=>{
+    return{type:INIT};
+}
 
 //register 상태 바꾸게 하는 action
 export const updateRegisterState = (data)=>{
@@ -55,8 +65,9 @@ const callSendEmailAPI=(email)=>{
         .catch(error=>{
             const status = error.response.status;
             const {message}=error.response.data;
-            if(status>=500){reject({success:false,message});}
-            else if (status>=400){reject({success:false,message:'요청 오류'});}
+            console.log(message);
+            if(status>=500){reject({success:false,message:message|'서버 점검중'});}
+            else if (status>=400){reject({success:false,message:message});}
         })
     })
 }
@@ -70,15 +81,15 @@ export const sendEmailRequest=(email)=>{
             dispatch(sendingEmail(email));
             try{
                 const result =await callSendEmailAPI(email);
-                dispatch(sendEmailSuccess());
-                toast.success(result.message);
+                dispatch(sendEmailSuccess(result.message));
+                /* toast.success(result.message); */
             }catch(err){
                 dispatch(sendEmailFailed(err.message));
-                toast.error(err.message);   
+                /* toast.error(err.message);  */  
             }
         }else{
-            dispatch(sendEmailFailed('invalid Format'));
-            toast.error('invalid Format');   
+            dispatch(sendEmailFailed('올바른 형식이 아닙니다'));
+            /* toast.error('invalid Format');  */  
         }  
     }
 }
@@ -87,13 +98,12 @@ export const sendingEmail=(email)=>{
     return {type:SEND_EMAIL,email}
 }
 //email 전송완료 메세지 action
-export const sendEmailSuccess=()=>{
-    return {type:SEND_EMAIL_SUCCESS}
+export const sendEmailSuccess=(message)=>{
+    return {type:SEND_EMAIL_SUCCESS,message}
 }
 //email 전송 실패 메세지 action
-export const sendEmailFailed=(msg)=>{
-    console.log(msg)
-    return {type:SEND_EMAIL_FAILED}
+export const sendEmailFailed=(message)=>{
+    return {type:SEND_EMAIL_FAILED,message}
 }
 
 ////////////////////
@@ -129,11 +139,10 @@ export const sendCodeRequest=(code)=>{
         dispatch(sendingCode());
         try{
             const {message} = await callSendingCodeAPI(code);
-            dispatch(sendCodeSuccess());
-            toast.success(message);
+            dispatch(sendCodeSuccess(message));
+            /* toast.success(message); */
         }catch(err){
-            dispatch(sendCodeFailed())
-            toast.error(err.message);
+            dispatch(sendCodeFailed(err.message))
         }
     }
 }
@@ -142,19 +151,18 @@ export const sendingCode=(code)=>{
     return{type:COMPARE_CODE,code}
 }
 //email 입력코드 비교 완료 메세지
-export const sendCodeSuccess=()=>{
-    return{type:COMPARE_CODE_SUCCESS}
+export const sendCodeSuccess=(message)=>{
+    return{type:COMPARE_CODE_SUCCESS,message}
 }
 //email 입력코드 비교 실패 메세지
-export const sendCodeFailed=()=>{
-    return{type:COMPARE_CODE_FAILED}
+export const sendCodeFailed=(message)=>{
+    return{type:COMPARE_CODE_FAILED,message}
 }
 
 ////////////
 const callSendingRegisterAPI=(userInfo)=>{
     return new Promise((resolve,reject)=>{
         const headers = {headers:{'content-type':'application/json'}};
-        console.log(userInfo);
         axios.post('/user/register',userInfo,headers)
         .then(resp=>{
             const {success,message}=resp.data;
@@ -176,12 +184,12 @@ export const sendRegistRequest=({password,history})=>{
         try{
             const userInfo = {email:getStore().register.email,password};
             const {message}= await callSendingRegisterAPI(userInfo);
-            dispatch(sendRegistSuccess());
-            toast.success(message);
-            history.push('/login');
+            dispatch(sendRegistSuccess(message));
+            /* toast.success(message); */
+            //history.push('/login');
         }catch(err){
-            toast.error(err.message);
-            dispatch(sendRegistFailed());
+            /* toast.error(err.message); */
+            dispatch(sendRegistFailed(err.message));
         }
     }
 }
@@ -190,12 +198,12 @@ export const sendingRegist=()=>{
     return {type:REGISTER}
 }
 //register 성공 action
-export const sendRegistSuccess=()=>{
-    return {type:REGISTER_SUCCESS}
+export const sendRegistSuccess=(message)=>{
+    return {type:REGISTER_SUCCESS,message}
 }
 //register 실패 action
-export const sendRegistFailed=()=>{
-    return {type:REGISTER_FAILURE}
+export const sendRegistFailed=(message)=>{
+    return {type:REGISTER_FAILURE,message}
 }
 
 //회원정보 등록 메세지
@@ -218,7 +226,7 @@ export function registerError(payload) {
 export function registerUser(payload) {
     return (dispatch) => {
         if (payload.creds.email.length > 0 && payload.creds.password.length > 0) {
-            toast.success("You've been registered successfully");
+            /* toast.success("You've been registered successfully"); */
             payload.history.push('/login');
         } else {
             dispatch(registerError('Something was wrong. Try again'));

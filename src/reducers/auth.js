@@ -1,5 +1,6 @@
 import {
-     LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_SUCCESS,
+     LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_SUCCESS,LOGIN_REQUEST,
+     LOGOUT_FAILURE,LOGOUT_REQUEST,INIT_INFO
 } from '../actions/user';
 
 const authenticated = localStorage.getItem('authenticated');
@@ -12,7 +13,8 @@ export default function auth(state = {
         case LOGIN_SUCCESS:
             return Object.assign({}, state, {
                 isFetching: false,
-                isAuthenticated: true,isLoginFailed:false,
+                isAuthenticated: true,
+                isLoginFailed:false,
                 errorMessage: '',
                 userInfo:action.userInfo
             });
@@ -23,11 +25,21 @@ export default function auth(state = {
                 isLoginFailed:true,
                 errorMessage: action.payload,
             });
+        case LOGIN_REQUEST:
+            return {...state, isFetching:true,isLoginFailed:false,
+                errorMessage: ''}
         case LOGOUT_SUCCESS:
             return Object.assign({}, state, {
                 isAuthenticated: false,
-                userInfo:null
+                userInfo:null,
+                isFetching:false
             });
+        case LOGOUT_REQUEST:
+            return{...state,isFetching:true}
+        case LOGOUT_FAILURE:
+            return{...state,isFetching:false,errorMessage:action.payload}
+        case INIT_INFO:
+            return {...state,isAuthenticated:false,userInfo:null,isFetching:false}
         default:
             return state;
     }

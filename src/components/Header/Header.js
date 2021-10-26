@@ -32,7 +32,7 @@ import BurgerIcon from "../Icons/HeaderIcons/BurgerIcon";
 import SearchIcon from "../Icons/HeaderIcons/SearchIcon";
 import ArrowIcon from "../Icons/HeaderIcons/ArrowIcon";
 
-import { logoutUser,requestLogout } from "../../actions/user";
+import { logoutUser} from "../../actions/user";
 import {
   openSidebar,
   closeSidebar,
@@ -97,7 +97,7 @@ class Header extends React.Component {
   }
 
   doLogout() {
-    this.props.dispatch(requestLogout());
+    this.props.dispatch(logoutUser({history:this.props.history}));
   }
 
   toggleMessagesDropdown() {
