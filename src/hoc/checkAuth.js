@@ -1,7 +1,8 @@
-import React,{useEffect, useMemo} from 'react';
-import {useSelector} from 'react-redux';
+import React,{useState,useEffect, useMemo} from 'react';
+import {useSelector,useDispatch} from 'react-redux';
 import {Redirect} from 'react-router';
-
+import {checkSessionExists,checkSessionNotExists} from '../actions/user';
+import LoadingPage from '../pages/loading/Loading';
 /**
  * 
  * 파라미터들 :
@@ -12,19 +13,37 @@ import {Redirect} from 'react-router';
  */
 export default function(RequestedComponent,shouldAuthChecked=false){
     function ReturnRequestedComponent (props){
+        
         const {isFetching,isAuthenticated} = useSelector(state=>state.auth);
-        console.log('router check Auth');
+        const dispatch = useDispatch();
+        const [allowDrawDOM,setAllowDrawDOM]=useState(false);
+        
         useEffect(()=>{
             if(shouldAuthChecked){
-                const flag = !isFetching&&isAuthenticated;
-                if(!flag){props.history.push('/login');}
-            }else{
-                const flag = !isAuthenticated;
-                if(!flag){props.history.push('/');}
+                if(localStorage.getItem('token')&&localStorage.getItem('authenticated')){
+                    // 로그인 세션 존재 여부 api 호출
+                    dispatch(checkSessionExists());
+                }
             }
-        },[isFetching,isAuthenticated])
+            return ()=>{
+                setAllowDrawDOM(false);
+            }
+        },[])
 
-        return (<RequestedComponent/>)
+        useEffect(()=>{
+            if(isFetching){setAllowDrawDOM(false)}
+            else {setAllowDrawDOM(true);}
+        },[isFetching])
+        
+        const RenderedDOM = useMemo(()=>{
+            if(shouldAuthChecked){
+                return isAuthenticated&&!isFetching?<RequestedComponent/>:<Redirect to="/login"/>;
+            }else{
+                return !isAuthenticated&&!isFetching?<RequestedComponent/>:<Redirect to="/app"/>
+            }
+        },[isAuthenticated])
+
+        return (allowDrawDOM?RenderedDOM:<LoadingPage/>)
     }
 
     return ReturnRequestedComponent;

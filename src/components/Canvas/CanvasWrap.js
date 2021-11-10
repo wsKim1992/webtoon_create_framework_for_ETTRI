@@ -7,28 +7,37 @@ import axios from 'axios';
 import ListGroup from 'reactstrap/lib/ListGroup';
 import ListGroupItem from 'reactstrap/lib/ListGroupItem';
 
-const sampleImgList1= ['sample1_imgToPen/1_input.png','sample1_imgToPen/2_input.png'
-    ,'sample1_imgToPen/3_input.png','sample1_imgToPen/4_input.png'
-    ,'sample1_imgToPen/5_input.png','sample1_imgToPen/6_input.png'];
+const sampleImgList1= ['/assets/sample_img/sample1_imgToPen/1_input.png'
+,'/assets/sample_img/sample1_imgToPen/2_input.png'
+,'/assets/sample_img/sample1_imgToPen/3_input.png'
+,'/assets/sample_img/sample1_imgToPen/4_input.png'
+,'/assets/sample_img/sample1_imgToPen/5_input.png'
+,'/assets/sample_img/sample1_imgToPen/6_input.png'];
 
-const sampleImgList2=['',
-    'sample2_simpleContiToPen/1_input.png','sample2_simpleContiToPen/2_input.png'
-    ,'sample2_simpleContiToPen/3_input.png'
+const sampleImgList2=[
+    '/assets/sample_img/sample2_simpleContiToPen/1_input.png'
+    ,'/assets/sample_img/sample2_simpleContiToPen/2_input.png'
+    ,'/assets/sample_img/sample2_simpleContiToPen/3_input.png'
 ]
 
-const sampleImgList3=[
-    'sample3_detailContiToPen/1_input.png','sample3_detailContiToPen/2_input.png'
-    ,'sample3_detailContiToPen/3_input.png'
-]
+const sampleImgList3=[]
 
 
-const initialSampleState = {apiType:'/request_image',sampleImgList:sampleImgList1,sampleImgOffset:0}
+const initialSampleState = {isSample:false,apiType:'/request_image',sampleImgList:sampleImgList1,sampleImgOffset:0}
 
 export const sampleContext = createContext({sampleStateDispatch:()=>{},sampleState:initialSampleState})
 
 const sampleImgReducer=(state,action)=>{
     const type = action.type;
     switch(type){
+        case 'toggle_sample_mode':{
+            const {isSample}={...state};
+            if(isSample){
+                return {...state,isSample:false};
+            }else{
+                return {...state,isSample:true};
+            }
+        }
         case 'change_dir':{
             const apiType = action.apiType;
             let sampleImgList;
@@ -42,7 +51,6 @@ const sampleImgReducer=(state,action)=>{
             return {...state,sampleImgList,sampleImgOffset:0,apiType}
         }
         case 'change_offset':{
-            console.log('change_offset');
             const arrLen = state.sampleImgList.length;
             const offsetNow = state.sampleImgOffset;
             const direction = action.direction;
@@ -64,9 +72,33 @@ const sampleImgReducer=(state,action)=>{
 
 const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
     const [sampleState,sampleStateDispatch]=useReducer(sampleImgReducer,initialSampleState)
-    const {pen,penStateDispatch}=useContext(PenManagerContext);
+    const {pen,penStateDispatch,onProgress}=useContext(PenManagerContext);
     const canvasWrapRef = useRef(null);
+    const [convertToWebToon,setConvertToWebToon]=useState(false);
+    
     const [srcJson , setSrcJson] = useState({});
+    const [inputForColorLayer,setInputForColorLayer]=useState([]);
+
+    const confirmAPIToken=async()=>{
+        try{
+            const confirmTokenRespHeader = {headers:{
+                'Authorization':localStorage.getItem('token'),
+                'content-type':'application/json'}
+            };
+            const confirmTokenResp = await axios.patch('/user/confirm_jwt',{},confirmTokenRespHeader);
+            const {success}=confirmTokenResp.data;
+            if(!success){
+                alert("부적절한 사용자 입니다!");
+                return false;
+            }
+            //jwt 토큰 유효기간 지나면 재발급받은 후 localStorage 재설정.
+            if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token);
+            return true;
+        }catch(err){
+            alert("서버 점검중..");
+            return false;
+        }
+    }
     useEffect(()=>{ 
         document.querySelector(".label").style.backgroundColor="#0390fc";
         return ()=>{
@@ -75,7 +107,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
     },[])
 
     const sampleSrcData = useMemo(()=>{
-        return {sampleStateDispatch,sampleImgList:sampleState.sampleImgList,sampleImgOffset:sampleState.sampleImgOffset,apiType:sampleState.apiType}
+        return {sampleStateDispatch,isSample:sampleState.isSample,sampleImgList:sampleState.sampleImgList,sampleImgOffset:sampleState.sampleImgOffset,apiType:sampleState.apiType}
     },[sampleState])
 
     const onClickLabel = (evt)=>{
@@ -86,13 +118,14 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
         evt.currentTarget.style.backgroundColor="#0390fc";
         setTimeout(()=>{
             const apiType = document.querySelector('input[name="selectApiAddr"]:checked').value;
-            console.log(`apiType : ${apiType}`);
+            setInputForColorLayer([]);
             sampleStateDispatch({type:'change_dir',apiType});
         },0)
     }
 
-    const apiToServer=async(request_url,funcName)=>{
+    const apiToServer=async(request_url,funcName,individualSrc=null)=>{
         try{
+
             //jwt 토큰 유효성 검사 
             const confirmTokenRespHeader = {headers:{
                 'Authorization':localStorage.getItem('token'),
@@ -108,8 +141,12 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token);
             
             //이미지 data 를 api 서버로 전송
-            
-            const decodeImgData = atob(pen.src1.split(',')[1]);
+            let decodeImgData = '';
+            if(individualSrc){
+                decodeImgData=atob(individualSrc.split(',')[1]);
+            }else{
+                decodeImgData = atob(pen.originalSrc.split(',')[1]);
+            }
             let asciiArr = [];
             for(let i = 0 ;i<decodeImgData.length;i++){
                 asciiArr.push(decodeImgData.charCodeAt(i))
@@ -125,33 +162,76 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             axios.post(request_url,formData,config)
             .then((resp)=>{
                 setSrcJson(resp.data);
-                console.log(resp.data);
                 let img = new Image();
                 img.onload = ()=>{
                     let tempCanvas = document.createElement('canvas');
                     tempCanvas.width=720;tempCanvas.height=720;
-                    let tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-                    penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});   
+                    tempCanvas.getContext('2d').fillStyle='#fff';
+                    tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
+                    const widthOrHeight = img.width>img.height?true:false;
+                    const widthInDraw = widthOrHeight?tempCanvas.width:parseFloat(img.width/img.height)*tempCanvas.width;
+                    const heightInDraw = widthOrHeight?parseFloat(img.height/img.width)*tempCanvas.height : tempCanvas.height;
+                    const offsetLength = widthOrHeight?(tempCanvas.height-heightInDraw)/2:(tempCanvas.width-widthInDraw)/2;
+                    if(widthOrHeight){
+                        tempCanvas.getContext('2d').drawImage(img,0,offsetLength,widthInDraw,heightInDraw);
+                    }else{tempCanvas.getContext('2d').drawImage(img,offsetLength,0,widthInDraw,heightInDraw);}
+                    if(funcName==='image2pen'){
+                        if(convertToWebToon){
+                            apiToServer('/request_image','conti2pen_cyclegan',tempCanvas.toDataURL('image/png'));
+                        }else{
+                            penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index:2,bs64:tempCanvas.toDataURL('image/png')});
+                            setInputForColorLayer([...resp.data.input_path]);
+                        }
+                    }else if(Array.isArray(resp.data.output_path)){
+                        penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index:2,bs64:img.src,src2Arr:resp.data.output_path});
+                    }else{
+                        penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index:2,bs64:tempCanvas.toDataURL('image/png')});
+                    }
                 }
-                img.src = funcName==='image2pen'?`/${resp.data.output_modeO_path[0]}`:`/${resp.data.output_path}`;
+
+                switch(funcName){
+                    case 'image2pen':{
+                        if(convertToWebToon){
+                            img.src=`/${resp.data.output_rembg_modeO_path[0]}`;
+                        }else{
+                            img.src = `/${resp.data.output_modeO_path[0]}`;
+                        }
+                        break;
+                    }
+                    case 'conti2pen_cyclegan':{
+                        img.src=`/${resp.data.output_path}`;
+                        break;
+                    }
+                    case 'conti2pen_find_ae':{
+                        img.src=`${resp.data.output_path[0]}`;
+                        break;
+                    }
+                    default :{
+                        break;
+                    }
+                }
+                
             })
             .catch(err=>{
-                if(err.response.state>=500)alert("서버 점검중..");
-                else if(err.response.state>=400)alert("입력 data 오류! .jpg,.png 파일을 업로드해주세요!");
+                alert("입력문제..");
+                penStateDispatch({type:actions.INIT});
                 return false;
             });
         }catch(err){
             alert('서버점검중...');
+            penStateDispatch({type:actions.INIT});
             return false;
         }
     }
 
     const onClickTransformBtn=async (evt)=>{
         evt.preventDefault();
+        if(onProgress){
+            console.log('onProgress');
+            return false;
+        }
 
-        const apiSelectRadio = document.querySelector('input[name="selectApiAddr"]:checked')?.value; 
-        console.log(apiSelectRadio);
+        const apiSelectRadio = sampleState.apiType;
         switch(apiSelectRadio){
             case '/request_image':{
                 apiToServer(apiSelectRadio,'image2pen');
@@ -189,27 +269,14 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                     }
                 }else{
                     //api 호출
-                    apiToServer('/request_image','conti2pen');
+                    apiToServer('/request_image','conti2pen_cyclegan');
                 }
                 break;
             }
-            case '/request_complicated_conti_to_penline':{
+            case '/request_convert_face_to_penline':{
              
                 setSrcJson({});
-                const inputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_input.png`;
-                const outputFileName = `${sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].split('/')[1].split('_')[0]}_output.png`;
-                
-                const newSrc = sampleSrcData.sampleImgList[sampleSrcData.sampleImgOffset].replace(inputFileName,outputFileName);
-               
-                let img = new Image();
-                img.src = `/static/sample/sample_img/${newSrc}`;
-                img.onload = ()=>{
-                    let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width=720;tempCanvas.height=720;
-                    let tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.drawImage(img,0,0,tempCanvas.width,tempCanvas.height);
-                    penStateDispatch({type:actions.CHANGE_SRC,index:2,bs64:tempCanvas.toDataURL('image/png')});
-                }
+                apiToServer('/request_image','conti2pen_find_ae')
                 break;
             }
             default:break ;
@@ -218,8 +285,8 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
 
     const onClickLineWidthTypeLabel = (e)=>{
         const chooseLineWidth = document.querySelector('input[name="chooseLineWidth"]').checked;
+        if(convertToWebToon){return false;}
         if(!chooseLineWidth){
-            alert("팬선 변경을 click 해주세요");
             return false;
         }
         let labelList = document.querySelectorAll(".listGroupItem")
@@ -245,13 +312,13 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                 }
             }catch(err){
                 labelChoosen.style.backgroundColor="#0f0544";
-                alert("이미지를 업로드해주세요!");
             }
             
         },100)
     }
 
     const onChangeCheckBackground = (e)=>{
+
         const checked = e.currentTarget.checked;
         try{
             const objectOrHuman =document.querySelector('input[name="objectOrHuman"]:checked').value;
@@ -273,11 +340,13 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
     }
     
     const onChangePenLineWidth = (e)=>{
+
         const checked = e.currentTarget.checked;
         const backgroundChecked = document.querySelector('input[name="withOutBackground"]').checked;
         const objectOrHuman = document.querySelector('input[name="objectOrHuman"]:checked').value;
         try{
             if(!checked){
+                document.querySelector('input:[name="lineWidthType"]').disabled=true;
                 let labelList = document.querySelectorAll(".listGroupItem");
                 labelList.forEach(l=>{
                     l.style.backgroundColor="#0f0544";
@@ -325,6 +394,67 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             }
         },100)
     }
+    const onClickWebToonStyle=(evt)=>{
+        if(evt.target.checked){
+            document.querySelector('input[name="objectOrHuman"]').disabled=true;
+            document.querySelector('input[name="chooseLineWidth"]').disabled=true;
+            document.querySelector('input[name="withOutBackground"]').disabled=true;
+            document.querySelector('input[name="lineWidthType"]').disabled=true;
+        }else{
+            document.querySelector('input[name="objectOrHuman"]').disabled=false;
+            document.querySelector('input[name="chooseLineWidth"]').disabled=false;
+            document.querySelector('input[name="withOutBackground"]').disabled=false;
+            document.querySelector('input[name="lineWidthType"]').disabled=false;
+        }
+        setConvertToWebToon(evt.target.checked);
+    }
+
+
+
+    const ConvertToColorLayer=async (e)=>{
+        if(!inputForColorLayer||inputForColorLayer.length===0){
+            alert('이미지를 팬선으로 변환을 해주세요!');
+            return false;
+        }
+        e.preventDefault();
+
+        const tokenConfirmed=await confirmAPIToken();
+        console.log(tokenConfirmed);
+        if(!tokenConfirmed){return false;}
+
+        const backgroundChecked = document.querySelector('input[name="withOutBackground"]').checked;
+ 
+        const checkedRadio = document.querySelector('input[name="objectOrHuman"]:checked');
+        const checkedValue = checkedRadio.value;
+        
+        let key = checkedValue==='human'?'_modeP_':'_modeO_';
+        key = `output${backgroundChecked?'_rembg':''}${key}path`;
+        const chooseLineWidth = document.querySelector('input[name="chooseLineWidth"]').checked
+        const keyVal = chooseLineWidth?document.querySelector('input[name="lineWidthType"]:checked')?.value:0;
+      
+        const dataToSend = new FormData();
+        dataToSend.append('img_path',backgroundChecked?inputForColorLayer[1]:inputForColorLayer[0]);
+        dataToSend.append('line_path',srcJson[key][keyVal]);
+        console.log(dataToSend);
+        penStateDispatch({type:actions.ON_PROGRESS});
+        try{
+            const headers = {headers:{'content-type':'multipart/form-data'}}
+            const resp=  await axios.post('/colorLayer',dataToSend,headers);
+            let tempImg = new Image();
+            tempImg.onload=()=>{
+                const canvas = document.createElement('canvas');
+                canvas.width = 720; canvas.height = 720;
+                canvas.getContext('2d').drawImage(tempImg,0,0,canvas.width,canvas.height);
+                penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index:2,bs64:canvas.toDataURL('image/png')})
+            }
+            tempImg.src=`/${resp.data.output_path}`;
+        }catch(err){
+            console.log(err);
+            penStateDispatch({type:actions.INIT});
+            alert("서버 점검중...");
+            return false;
+        }
+    }
 
     return(
         <React.Fragment>
@@ -339,15 +469,15 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                         </Button>
                     </div>
                     <div className={s.btnWrap}>
-                        <Input id="sketchToPen" type="radio" name="selectApiAddr" value="/request_simple_conti_to_penline"/>
+                        <Input id="sketchToPen" type="radio" name="selectApiAddr" value="/request_convert_face_to_penline"/>
                         <Button>
-                            <Label className="label" onClick={onClickLabel} htmlFor="sketchToPen"> 간단 콘티를 팬선으로 변환</Label>
+                            <Label  className="label" onClick={onClickLabel} htmlFor="sketchToPen">얼굴 스케치를 팬선으로 변환</Label>
                         </Button>
                     </div>
                     <div className={s.btnWrap}>
-                        <Input id="contiToChar" type="radio" name="selectApiAddr" value="/request_complicated_conti_to_penline"/>
+                        <Input id="contiToChar" type="radio" name="selectApiAddr" value="/request_simple_conti_to_penline"/>
                         <Button style={{borderRadius:"0 12.5px 12.5px 0"}}>
-                            <Label className="label" onClick={onClickLabel} style={{borderRadius:"0 12.5px 12.5px 0"}} htmlFor="contiToChar">상세 콘티를 팬선으로 변환</Label>
+                            <Label className="label" onClick={onClickLabel} style={{borderRadius:"0 12.5px 12.5px 0"}} htmlFor="contiToChar">콘티를 팬선으로 변환</Label>
                         </Button>
                     </div>
                 </div>
@@ -364,7 +494,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                         <Canvas index={2} canvasWidth = {parseFloat(canvasWrapWidth*0.35)}/>
                         
                     </sampleContext.Provider>
-                    <div className={s.canvasOptionWrap}>
+                    {sampleState.apiType==='/request_image'&&<div className={s.canvasOptionWrap}>
                         <div className={s.canvasOption}>
                             <ListGroup className={s.optionListWrap}>
                                 <ListGroupItem>
@@ -395,10 +525,6 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                                 </ListGroupItem>
                             </ListGroup>
                             <ListGroup className={s.changePenLineWrap}>
-                                {/* <ListGroupItem>
-                                    <Input type="radio" name="lineWidthType" value="0" id="original"/>
-                                    <Label  onClick={onClickLineWidthTypeLabel} htmlFor="original">output_path</Label>
-                                </ListGroupItem> */}
                                 <ListGroupItem>
                                     <Input type="radio" name="lineWidthType" value="1" id="opt1_path"/>
                                     <Label className="listGroupItem" onClick={onClickLineWidthTypeLabel} htmlFor="opt1_path">option1</Label>
@@ -415,9 +541,22 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                                     <Input type="radio" name="lineWidthType" value="4" id="opt4_path"/>
                                     <Label className="listGroupItem" onClick={onClickLineWidthTypeLabel} htmlFor="opt4_path">option4</Label>
                                 </ListGroupItem>
+                                <ListGroupItem>
+                                    <p>
+                                        <span>
+                                            <Input onChange={onClickWebToonStyle} style={{margin:'-10px 10px'}} type="checkbox" name="to_webtoon_style" value='/request_convert_to_webtoon_style' id="to_webtoon_style"/>
+                                        </span>
+                                        <Label className="listGroupItem" htmlFor="to_webtoon_style">어쩔꼰대 스타일로 변환</Label>
+                                    </p>
+                                </ListGroupItem>
+                                <ListGroupItem>
+                                    <p style={{display:'flex',flexDirection:'row',justifyContent:'center',alignItems:'space-evenly'}}>
+                                        <Button style={{border:'none',width:'80%',height:'80%',backgroundColor:'rgb(3, 144, 252)'}} onClick={ConvertToColorLayer}>Convert To Color Layer</Button>
+                                    </p>
+                                </ListGroupItem>
                             </ListGroup>
                         </div>
-                    </div>
+                    </div>}
                 </div>
                 
             </div>
@@ -426,5 +565,3 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
 })
 
 export default CanvasWrap;
-
-

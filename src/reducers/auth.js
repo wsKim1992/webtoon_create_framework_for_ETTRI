@@ -1,6 +1,6 @@
 import {
      LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_SUCCESS,LOGIN_REQUEST,
-     LOGOUT_FAILURE,LOGOUT_REQUEST,INIT_INFO
+     LOGOUT_FAILURE,LOGOUT_REQUEST,INIT_INFO,CHECK_REQUEST
 } from '../actions/user';
 
 const authenticated = localStorage.getItem('authenticated');
@@ -10,6 +10,10 @@ export default function auth(state = {
     userInfo:null
 }, action) {
     switch (action.type) {
+        case CHECK_REQUEST:
+            return Object.assign({},state,{
+                isFetching:true
+            })
         case LOGIN_SUCCESS:
             return Object.assign({}, state, {
                 isFetching: false,

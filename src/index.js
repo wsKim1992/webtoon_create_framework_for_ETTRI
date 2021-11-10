@@ -9,11 +9,11 @@ import App from './components/App';
 import reducers from './reducers';
 
 //validity 를 check 하는 middleware
-
+/* 
 const enhancer = compose(
   applyMiddleware(ReduxThunk)
   ,window.__REDUX_DEVTOOLS_EXTENSION__ &&window.__REDUX_DEVTOOLS_EXTENSION__()
-)
+) */
 const store = createStore(
   reducers,
   applyMiddleware(ReduxThunk)

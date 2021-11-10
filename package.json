@@ -63,6 +63,7 @@
   "dependencies": {
     "@amcharts/amcharts4": "^4.9.28",
     "@amcharts/amcharts4-geodata": "^4.1.16",
+    "@babel/preset-env": "^7.15.8",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
@@ -72,6 +73,7 @@
     "axios": "^0.21.4",
     "bootstrap": "4.5.0",
     "classnames": "^2.2.6",
+    "core-js": "^3.19.0",
     "echarts": "^4.8.0",
     "echarts-for-react": "^2.0.16",
     "font-awesome": "4.7.0",
