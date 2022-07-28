@@ -1,433 +1,618 @@
-import React,{useState,useCallback,useContext,useMemo,memo,useRef, useEffect,forwardRef} from 'react';
-import s from './Canvas.module.scss';
-import { actions,modes,PenManagerContext } from '../Layout/Layout';
+import React, { useState, useCallback, useContext, memo, useRef, useEffect } from 'react';
+import { actions, modes, PenManagerContext } from '../Layout/Layout';
+import { faCamera } from '@fortawesome/free-solid-svg-icons';
+import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft,faChevronRight,faUndo,faRedo,faImage,faSave, faSearchMinus, faSearchPlus} from '@fortawesome/free-solid-svg-icons';
-import { Button} from 'reactstrap';
-import Input from 'reactstrap/lib/Input';
-import Label from 'reactstrap/lib/Label';
-import { sampleContext } from './CanvasWrap';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 
-const drawImage = (src,canvasRef,canvasCtx)=>{
-    
+const drawImage = (src, canvasRef) => {
     let img = new Image();
-    img.src=src;
-    img.onload = ()=>{
-        canvasCtx.drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
-    }
-    
-}
-/* 
-const getTempCanvas = (src,w,h)=>{
-    let img = new Image();
-    img.width=w;img.height=h;
     img.src = src;
-    return img;
-} */
+    img.onload = () => {
+        canvasRef.current.getContext('2d').drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
+}
 
-const Canvas = memo(({index,canvasWidth})=>{
-    const canvasRef = useRef(null);
-    const btnListWrapRef = useRef(null);
-    const [canvasCtx,setCanvasCtx] = useState(null);
-    const [isDraw,setIsDraw]=useState(false);
-    const {pen,history,penStateDispatch,onProgress}=useContext(PenManagerContext);
-    const srcHistory = index===1?history.src1History:history.src2History;
-    const [offset,setOffset]=useState(0);
-    const [prevX,setPrevX] = useState(0);
-    const [prevY,setPrevY] = useState(0);
-    const [startX,setStartX] = useState(0);
-    const [startY,setStartY] = useState(0);
-    const {sampleStateDispatch,sampleImgList,sampleImgOffset,apiType}=useContext(sampleContext);
-    const {isFetching,userInfo}=useSelector(state=>state.auth);
+const CanvasContainer = styled.div`
+    width:100%;height:100%;
+`;
+
+const CanvasWrapper = styled.div`
+    width:100%;height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    .canvas-cover{
+        position:relative;
+        width:512px;height:512px;
+        .video-component{
+            position:absolute;
+            top: 0;
+            left: 0;
+            object-fit:fill;
+        }
+
+        .loading-component{
+            width:100%;height:100%;
+            position:absolute;
+            top:0; left:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background-color:#fff;
+            img{
+                width:100%;height:auto;
+                object-fit:contain;
+            }
+        }
+
+        .camera-button-cover{
+            position:absolute;
+            top:0;left:0;
+            z-index:10;
+            width:100%;height:100%;
+            background-color:transparent;
+            cursor:pointer;
+            .camera-comment-wrapper{
+                position:absolute;
+                top:50%;left:50%;
+                transform:translateX(-50%) translateY(-50%);
+                width:100px; height:125.5px;
+                .camera-icon-box{
+                    width:100px;height:100px;
+                    text-align:center;
+                    line-height: 95px;
+                    font-size: 45.5px;
+                    color:#000;
+                    box-sizing:border-box;
+                    border:2.5px solid #000;
+                    border-radius:100%;
+                }
+                .camera-text-box{
+                    font-size:var(--canvas-function-button);
+                    height:20px;width:100%;
+                    color:#000;
+                    line-height:20px;
+                    text-align:center;
+                    font-weight:bold;
+                }
+            }
+        }
+        .camera-controller-wrapper{
+            width:100%;height:55.5px;
+            display:flex;
+            flex-direction:row;
+            align-items:center;
+            justify-content:space-evenly;
+            button{
+                font-size:var(--canvas-function-button);
+                text-align:center;
+                background-color:#4b544d;
+                color:#fff;
+                border:none;
+                border-radius: 5.5px;
+                padding: 10.5px;
+            }
+        }
+    }
+    @media screen and (max-width:650px){
+        .canvas-cover{
+            width:450px;height:450px;
+            
+            .camera-button-cover{
+                .camera-comment-wrapper{
+                    width:100px; height:125.5px;
+                    .camera-icon-box{
+                        width:100px;height:100px;
+                        line-height: 95px;
+                        font-size: 35.5px;
+                    }
+                    .camera-text-box{
+                        font-size:var(--canvas-function-button);
+                        height:20px;
+                        line-height:20px;
+                    }
+                }
+            }
+            .camera-controller-wrapper{
+                height:55.5px;
+                button{
+                    font-size:var(--canvas-function-button);
+                    border-radius: 5.5px;
+                    padding: 10.5px;
+                }
+            }
+        }
+    }
+    @media screen and (max-width:495px){
+        .canvas-cover{
+            width:405px;height:405px;
     
-    const canvasFunctionList={
-        [modes.BRUSH]:{
-            mouseDown:(e)=>{
-                if(!isDraw){
+            .camera-button-cover{
+                .camera-comment-wrapper{
+                    width:80px; height:100px;
+                    .camera-icon-box{
+                        width:80px;height:80px;
+                        line-height: 76px;
+                        font-size: 35.5px;
+                    }
+                    .camera-text-box{
+                        font-size:var(--canvas-function-button);
+                        height:20px;
+                        line-height:20px;
+                    }
+                }
+            }
+            .camera-controller-wrapper{
+                height:55.5px;
+                button{
+                    font-size:var(--canvas-function-button);
+                    border-radius: 5.5px;
+                    padding: 10.5px;
+                }
+            }
+        }
+    }
+    @media screen and (max-width:410px){
+        .canvas-cover{
+            width:355px;height:355px;
+    
+            .camera-button-cover{
+                .camera-comment-wrapper{
+                    width:60px; height:80px;
+                    .camera-icon-box{
+                        width:60px;height:60px;
+                        line-height: 55px;
+                        font-size: 25.5px;
+                    }
+                    .camera-text-box{
+                        font-size:var(--canvas-function-button);
+                        height:20px;
+                        line-height:20px;
+                    }
+                }
+            }
+            .camera-controller-wrapper{
+                height:55.5px;
+                button{
+                    font-size:var(--canvas-function-button);
+                    border-radius: 5.5px;
+                    padding: 10.5px;
+                }
+            }
+        }
+    }
+    @media screen and (max-width:370px){
+        .canvas-cover{
+            width:310px;height:310px;
+        }
+    }
+`;
+
+const Canvas = memo(() => {
+    const canvasRef = useRef(null);
+    const originalCanvasRef = useRef(null);
+    const videoComponentRef = useRef(null);
+    const webcamStreamRef = useRef(null);
+    /* const [canvasCtx, setCanvasCtx] = useState(null);
+    const [originalCanvasCtx, setOriginalCanvasCtx] = useState(null); */
+    const [isDraw, setIsDraw] = useState(false);
+    const { pen, history, penStateDispatch, onProgress, globalState } = useContext(PenManagerContext);
+    const srcHistory = history.src1History;
+    const [videoOn, setVideoOn] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const [prevX, setPrevX] = useState(0);
+    const [prevY, setPrevY] = useState(0);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+
+    const {loadingCallAPI}=useSelector(state=>state.callAPIReducer);
+    const {
+        media_brightness,
+        media_contrast,
+        media_saturation
+    }=useSelector(state=>state.MediaReducer);
+
+    const changeCanvasSizeAccordingToWindowInnerWidth = useCallback(() => {
+        if (canvasRef.current) {
+            const { innerWidth } = window;
+            let newCanvasWidth = 512;
+            if (650 <= innerWidth && innerWidth < 855) {
+                newCanvasWidth = 512;
+            } else if (495 <= innerWidth && innerWidth < 650) {
+                newCanvasWidth = 450;
+            } else if (410 < innerWidth && innerWidth < 495) {
+                newCanvasWidth = 405;
+            } else if (innerWidth>=370&&innerWidth < 410) {
+                newCanvasWidth = 355;
+            }else if(innerWidth<370){
+                newCanvasWidth = 305;
+            }
+            canvasRef.current.width = newCanvasWidth;
+            canvasRef.current.height = newCanvasWidth;
+            if(!pen.src1){
+                canvasRef.current.getContext('2d').fillStyle="#fff";
+                canvasRef.current.getContext('2d').fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
+            }
+            
+            drawImage(pen.src1?pen.src1:canvasRef.current.toDataURL('image/jpg'),canvasRef);
+        }
+    }, [canvasRef.current,pen.src1])
+
+    const initializingCanvas = useCallback(() => {
+        if (canvasRef.current) {
+            canvasRef.current.getContext('2d').fillStyle = "#fff";
+            canvasRef.current.getContext('2d').fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+    }, [canvasRef.current])
+
+    const windowBeforeUnload = useCallback(() => {
+        console.log("onbeforeunload callback");
+        if (canvasRef.current) canvasRef.current = null;
+        if (originalCanvasRef.current) originalCanvasRef.current = null;
+        if (videoComponentRef.current) {
+            videoComponentRef.current.pause();
+            videoComponentRef.current.srcObject = null;
+            videoComponentRef.current = null;
+        }
+        if (webcamStreamRef.current) {
+            webcamStreamRef.current.getTracks()[0].stop();
+            webcamStreamRef.current = null;
+        }
+    }, [videoComponentRef.current, canvasRef.current,
+    webcamStreamRef.current,
+    canvasRef.current]);
+
+    useEffect(()=>{
+        window.addEventListener("beforeunload", windowBeforeUnload);
+    },[
+        canvasRef.current,
+        videoComponentRef.current,
+        webcamStreamRef.current,
+    ]);
+
+    useEffect(() => {
+        window.addEventListener("resize", changeCanvasSizeAccordingToWindowInnerWidth);
+        return () => {
+            window.removeEventListener("resize", changeCanvasSizeAccordingToWindowInnerWidth);
+        }
+    }, [
+        canvasRef.current,
+        pen.src1
+    ]);
+
+    useEffect(() => {
+        //기존 canvas 설정
+        const ctx = canvasRef.current.getContext('2d', { alpha: true });
+        changeCanvasSizeAccordingToWindowInnerWidth();
+
+        //setCanvasCtx(ctx);
+        ctx.fillStyle = '#fff';
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        //sample 이미지 1번 canvas에 반영되게 하기..
+        penStateDispatch({ type: actions.CHANGE_SRC, bs64: canvasRef.current.toDataURL('image/png') })
+        return () => {
+            penStateDispatch({ type: actions.INIT });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            canvasRef.current.getContext('2d').lineWidth = pen.lineWidth;
+            canvasRef.current.getContext('2d').strokeStyle = pen.strokeStyle;
+        }
+    }, [pen.strokeStyle, pen.lineWidth, canvasRef.current])
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            if (pen.src1) {
+                const src = pen.src1;
+                drawImage(src, canvasRef, canvasRef.current.getContext('2d'));
+            } else {
+                initializingCanvas();
+            }
+        }
+    }, [pen.src1, canvasRef.current])
+
+
+    const canvasFunctionList = {
+        [modes.BRUSH]: {
+            mouseDown: (e) => {
+                if (!isDraw) {
                     setIsDraw(true);
                 }
             },
-            mouseMove:(e)=>{
-                const {offsetX,offsetY}=e.nativeEvent;
-                if(isDraw){
-                    canvasCtx.lineTo(offsetX,offsetY);
-                    canvasCtx.stroke();
-                }else{
-                    canvasCtx.beginPath();
-                    canvasCtx.moveTo(offsetX,offsetY);
+            mouseMove: (e) => {
+                const { offsetX, offsetY } = e.nativeEvent;
+                if (isDraw) {
+                    canvasRef.current.getContext('2d').lineTo(offsetX, offsetY);
+                    canvasRef.current.getContext('2d').stroke();
+                } else {
+                    canvasRef.current.getContext('2d').beginPath();
+                    canvasRef.current.getContext('2d').moveTo(offsetX, offsetY);
                 }
             },
-            mouseUp:(e)=>{
+            mouseUp: (e) => {
                 e.preventDefault();
                 setIsDraw(false);
-                setOffset(prevOffset=>prevOffset+1);
-                penStateDispatch({type:actions.CHANGE_SRC,offset,index,bs64:canvasRef.current.toDataURL('image/jpeg')});
+                //setOffset(prevOffset=>prevOffset+1);
+                penStateDispatch({ type: actions.CHANGE_SRC, offset, bs64: canvasRef.current.toDataURL('image/png') });
             },
         },
-        [modes.COLOR_PICKER]:{
-            mouseDown:(e)=>{
-                const {nativeEvent} = e;
-                const {offsetX,offsetY}=nativeEvent;
-                const colorData = canvasCtx.getImageData(offsetX,offsetY,1,1).data;
+        [modes.COLOR_PICKER]: {
+            mouseDown: (e) => {
+                const { nativeEvent } = e;
+                const { offsetX, offsetY } = nativeEvent;
+                const colorData = canvasRef.current.getContext('2d').getImageData(offsetX, offsetY, 1, 1).data;
                 let colorHex = ['#',];
-                colorData.forEach((v,i)=>{
-                    if(i===colorData.length-1){return false;}
-                    let colorToHex=v.toString(16);
-                    if(colorToHex.length<2){colorToHex=`0${colorToHex}`}
+                colorData.forEach((v, i) => {
+                    if (i === colorData.length - 1) { return false; }
+                    let colorToHex = v.toString(16);
+                    if (colorToHex.length < 2) { colorToHex = `0${colorToHex}` }
                     colorHex.push(colorToHex);
                 })
-                colorHex=colorHex.join('');
-                penStateDispatch({type:actions.CHANGE_STROKE_STYLE,strokeStyle:colorHex});
+                colorHex = colorHex.join('');
+                penStateDispatch({ type: actions.CHANGE_STROKE_STYLE, strokeStyle: colorHex });
             },
-            mouseMove:(e)=>{
+            mouseMove: (e) => {
                 return false;
             },
-            mouseUp:(e)=>{
+            mouseUp: (e) => {
                 return false;
             },
         },
-        [modes.GEOMETRY_SQUARE]:{
-            mouseDown:(e)=>{
-                const {nativeEvent}=e;
+        [modes.GEOMETRY_SQUARE]: {
+            mouseDown: (e) => {
+                const { nativeEvent } = e;
                 setIsDraw(true);
                 setPrevX(nativeEvent.offsetX);
                 setPrevY(nativeEvent.offsetY);
             },
-            mouseMove:(e)=>{
-                if(!isDraw){return false;}
-                const {offsetX,offsetY}=e.nativeEvent;
-                const width = offsetX-prevX;
-                const height = offsetY-prevY;
+            mouseMove: (e) => {
+                if (!isDraw) { return false; }
+                const { offsetX, offsetY } = e.nativeEvent;
+                const width = offsetX - prevX;
+                const height = offsetY - prevY;
+
+                const ratioX = prevX / canvasRef.current.width;
+                const ratioY = prevY / canvasRef.current.height;
+                /* const originalprevX = originalCanvasRef.current.width * ratioX;
+                const originalprevY = originalCanvasRef.current.height * ratioY;
+                const originalSquareWidth = originalCanvasRef.current.width*(width/canvasRef.current.width);
+                const originalSquareHeight = originalCanvasRef.current.height*(height/canvasRef.current.height); */
+
                 let img = new Image();
-                img.onload=function(){
-                    canvasCtx.drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
-                    canvasCtx.strokeRect(prevX,prevY,width,height);
+                img.onload = function () {
+                    /* originalCanvasCtx.drawImage(img,0,0,originalCanvasRef.current.width,originalCanvasRef.current.height);
+                    originalCanvasCtx.strokeRect(originalprevX,originalprevY,originalSquareWidth,originalSquareHeight); */
+                    canvasRef.current.getContext('2d').drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+                    canvasRef.current.getContext('2d').strokeRect(prevX, prevY, width, height);
                 };
-                img.src = srcHistory[offset];
+                img.src = pen.src1;
             },
-            mouseUp:(e)=>{
+            mouseUp: (e) => {
                 setIsDraw(false);
-                setPrevX(0);setPrevY(0);
-                penStateDispatch({type:actions.CHANGE_SRC,index,offset,bs64:canvasRef.current.toDataURL('image/jpeg')});
-                setOffset(prevOffset=>prevOffset+1);
+                setPrevX(0); setPrevY(0);
+                penStateDispatch({ type: actions.CHANGE_SRC, offset, bs64: canvasRef.current.toDataURL('image/jpeg') });
+                //setOffset(prevOffset=>prevOffset+1);
             }
         },
-        [modes.GEOMETRY_CIRCLE]:{
-            mouseDown:(e)=>{
-                const {offsetX,offsetY} = e.nativeEvent;
+        [modes.GEOMETRY_CIRCLE]: {
+            mouseDown: (e) => {
+                const { offsetX, offsetY } = e.nativeEvent;
                 setIsDraw(true);
-                setPrevX(offsetX);setPrevY(offsetY);
+                setPrevX(offsetX); setPrevY(offsetY);
             },
-            mouseMove:(e)=>{
-                if(!isDraw){return false;}
-                const {offsetX,offsetY} = e.nativeEvent;
-                const radius = Math.sqrt(Math.pow((offsetX-prevX),2)+Math.pow((offsetY-prevY),2));
+            mouseMove: (e) => {
+                if (!isDraw) { return false; }
+                const { offsetX, offsetY } = e.nativeEvent;
+                const radius = Math.sqrt(Math.pow((offsetX - prevX), 2) + Math.pow((offsetY - prevY), 2));
+
                 let img = new Image();
-                img.onload=function(){
-                    canvasCtx.drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(prevX,prevY,radius,0,Math.PI*2);
-                    canvasCtx.stroke();
+                img.onload = function () {
+
+                    canvasRef.current.getContext('2d').drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+                    canvasRef.current.getContext('2d').beginPath();
+                    canvasRef.current.getContext('2d').arc(prevX, prevY, radius, 0, Math.PI * 2);
+                    canvasRef.current.getContext('2d').stroke();
                 };
-                img.src = srcHistory[offset];
+                img.src = pen.src1;
             },
-            mouseUp:(e)=>{
+            mouseUp: (e) => {
                 setIsDraw(false);
-                setPrevX(0);setPrevY(0);
-                penStateDispatch({type:actions.CHANGE_SRC,index,offset,bs64:canvasRef.current.toDataURL('image/jpeg')});
-                setOffset(prevOffset=>prevOffset+1);
+                setPrevX(0); setPrevY(0);
+                penStateDispatch({ type: actions.CHANGE_SRC, offset, bs64: canvasRef.current.toDataURL('image/jpeg') });
+                //setOffset(prevOffset=>prevOffset+1);
             }
         },
-        [modes.GEOMETRY_POLYGON]:{
-            mouseDown:(e)=>{
-                const {offsetX,offsetY}=e.nativeEvent;
-                if(!isDraw){
-                    canvasCtx.beginPath();
-                    canvasCtx.moveTo(offsetX,offsetY);
+        [modes.GEOMETRY_POLYGON]: {
+            mouseDown: (e) => {
+                const { offsetX, offsetY } = e.nativeEvent;
+                if (!isDraw) {
+                    canvasRef.current.getContext('2d').beginPath();
+                    canvasRef.current.getContext('2d').moveTo(offsetX, offsetY);
                     setIsDraw(true);
-                    setStartX(offsetX);setStartY(offsetY);
-                }else{
+                    setStartX(offsetX); setStartY(offsetY);
+                } else {
                     //canvasCtx.moveTo(prevX,prevY);
-                    canvasCtx.lineTo(offsetX,offsetY);
-                    canvasCtx.stroke();
+                    canvasRef.current.getContext('2d').lineTo(offsetX, offsetY);
+                    canvasRef.current.getContext('2d').stroke();
                 }
-                setPrevX(offsetX);setPrevY(offsetY);
-                penStateDispatch({type:actions.CHANGE_SRC,index,offset,bs64:canvasRef.current.toDataURL('image/jpeg')});
-                setOffset(prevOffset=>prevOffset+1);
+                setPrevX(offsetX); setPrevY(offsetY);
+                penStateDispatch({ type: actions.CHANGE_SRC, offset, bs64: canvasRef.current.toDataURL('image/jpeg') });
+                //setOffset(prevOffset=>prevOffset+1);
             },
-            mouseMove:async (e)=>{
-                if(!isDraw){return false;}
-                const {offsetX,offsetY}=e.nativeEvent;
+            mouseMove: async (e) => {
+                if (!isDraw) { return false; }
+                const { offsetX, offsetY } = e.nativeEvent;
                 let img = new Image();
                 img.src = srcHistory[offset];
-                img.onload=await function(){}
-                canvasCtx.drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(prevX,prevY);
-                canvasCtx.lineTo(offsetX,offsetY);
-                canvasCtx.stroke();
+                img.onload = await function () { }
+                canvasRef.current.getContext('2d').drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+                canvasRef.current.getContext('2d').beginPath();
+                canvasRef.current.getContext('2d').moveTo(prevX, prevY);
+                canvasRef.current.getContext('2d').lineTo(offsetX, offsetY);
+                canvasRef.current.getContext('2d').stroke();
             },
-            mouseUp:(e)=>{
-                const {offsetX,offsetY}=e.nativeEvent;
-                const dist = Math.sqrt(Math.pow((startX-offsetX),2)+Math.pow((startY-offsetY),2));
-        
-                if(dist<=canvasCtx.lineWidth){
-                    canvasCtx.closePath();
-                    canvasCtx.stroke();
+            mouseUp: (e) => {
+                const { offsetX, offsetY } = e.nativeEvent;
+                const dist = Math.sqrt(Math.pow((startX - offsetX), 2) + Math.pow((startY - offsetY), 2));
+
+                if (dist <= canvasRef.current.getContext('2d').lineWidth) {
+                    canvasRef.current.getContext('2d').closePath();
+                    canvasRef.current.getContext('2d').stroke();
                     setIsDraw(false);
-                    setPrevX(0);setPrevY(0);
-                    setStartX(0);setStartY(0);
-                    penStateDispatch({type:actions.CHANGE_SRC,index,offset,bs64:canvasRef.current.toDataURL('image/jpeg')});
-                    setOffset(prevOffset=>prevOffset+1);
+                    setPrevX(0); setPrevY(0);
+                    setStartX(0); setStartY(0);
+                    penStateDispatch({ type: actions.CHANGE_SRC, offset, bs64: canvasRef.current.toDataURL('image/jpeg') });
+                    //setOffset(prevOffset=>prevOffset+1);
                 }
             }
         }
     }
-    useEffect(()=>{
-        if(index===2&&onProgress){
-            canvasCtx.fillStyle='#fff';
-            canvasCtx.fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
-        }
-    },[onProgress])
-    const onChangeInputFile=index===1?(e)=>{
-        const file = e.target.files[0];
-        if(file&&file.type.match('image/*')){
-            let fileReader = new FileReader();
-            fileReader.onload=(evt)=>{
-                let img = new Image();
-                img.src = evt.target.result;
-                img.onload = ()=>{
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width=720;tempCanvas.height=720;
-                    tempCanvas.getContext('2d').fillStyle='#fff';
-                    tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
-                    const widthOrHeight = img.width>img.height?true:false;
-                    const widthInDraw = widthOrHeight?tempCanvas.width:parseFloat(img.width/img.height)*tempCanvas.width;
-                    const heightInDraw = widthOrHeight?parseFloat(img.height/img.width)*tempCanvas.height : tempCanvas.height;
-                    const offsetLength = widthOrHeight?(tempCanvas.height-heightInDraw)/2:(tempCanvas.width-widthInDraw)/2;
-                    if(widthOrHeight){tempCanvas.getContext('2d').drawImage(img,0,offsetLength,widthInDraw,heightInDraw);}
-                    else{tempCanvas.getContext('2d').drawImage(img,offsetLength,0,widthInDraw,heightInDraw);}
-                    penStateDispatch({type:actions.CHANGE_BACKGROUND_IMG,index,offset:0,bs64:tempCanvas.toDataURL('image/jpeg')});
-                }
-            }
-            fileReader.readAsDataURL(file);
-        }
-        e.currentTarget.value='';
-    }:null;
 
-    useEffect(()=>{
-        if(!isFetching&&userInfo&&canvasRef.current){
+
+    const onClickCameraOn = useCallback(() => {
+        if (!videoOn) {
+            setVideoOn(true);
+        }
+    }, [videoOn]);
+
+    const turnCameraOff = useCallback(() => {
+        if (videoOn) {
+            videoComponentRef.current.srcObject = null;
+            videoComponentRef.current.pause();
+            webcamStreamRef.current.getTracks().forEach((track)=>{
+                track.stop();
+            })
+            webcamStreamRef.current = null;
+            setVideoOn(false);
+        }
+    }, [videoOn])
+
+    const onStartCamera = useCallback(async () => {
+        if (videoComponentRef.current && videoOn) {
+            try {
+                const mediaOption = {
+                    video: {
+                        facingMode: "user",
+                        width: videoComponentRef.current.width,
+                        height: videoComponentRef.current.height
+                    },
+                    audio: false,
+                }
+                const mediaStream = await navigator.mediaDevices.getUserMedia(mediaOption);
+                videoComponentRef.current.srcObject = mediaStream;
+                videoComponentRef.current.play();
+                webcamStreamRef.current = mediaStream;
+
+            } catch (err) {
+                console.error(err);
+                setVideoOn(false);
+                window.alert("Camera 모듈 연결 문제!");
+            }
+        }
+    }, [videoComponentRef.current, videoOn])
+
+    useEffect(() => {
+        if (videoComponentRef.current && videoOn && canvasRef.current) {
+            //console.log(videoComponentRef.current);
+            const { width: canvasWidth, height: canvasHeight } = canvasRef.current;
+
+            videoComponentRef.current.width = canvasWidth;
+            videoComponentRef.current.height = canvasHeight;
             
-            const ctx = canvasRef.current.getContext('2d',{alpha:true});
-            canvasRef.current.width = canvasWidth;
-            canvasRef.current.height = canvasWidth;
-
-            setCanvasCtx(ctx);
-            ctx.fillStyle='#fff';
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            ctx.fillRect(0,0,canvasRef.current.width,canvasRef.current.height);
-            //sample 이미지 1번 canvas에 반영되게 하기..
-            if(index===1){
-                let img = new Image();  
-                img.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
-                img.onload = ()=>{
-                    canvasRef.current.getContext('2d').drawImage(img,0,0,canvasRef.current.width,canvasRef.current.height);
-                    penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
-                }
-            }else{
-                penStateDispatch({type:actions.CHANGE_SRC,index,bs64:canvasRef.current.toDataURL('image/jpeg')})
-            }
-            return ()=>{
-                penStateDispatch({type:actions.INIT});
-            }
+            onStartCamera();
         }
-
-    },[isFetching,userInfo])
-    
-    useEffect(()=>{
-        if(apiType==="/request_simple_conti_to_penline"&&sampleImgOffset===0){
-            let canvas = document.createElement('canvas');
-            canvas.width = 720; canvas.height= 720;
-            canvas.getContext('2d').fillStyle='#fff';
-            canvas.getContext('2d').fillRect(0,0,canvas.width,canvas.height);
-            penStateDispatch({type:actions.CHANGE_SRC,index:1,bs64:canvas.toDataURL('image/png')});
-        }else{
-            let tempImg = new Image();  
-            tempImg.src = `/static/sample/sample_img/${sampleImgList[sampleImgOffset]}`;
-            tempImg.onload = ()=>{
-                let tempCanvas = document.createElement('canvas');
-                tempCanvas.width = 720;tempCanvas.height = 720;
-                tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
-                penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
-            }
-        }
-    },[sampleImgList,sampleImgOffset])
+    }, [videoComponentRef.current, videoOn, canvasRef.current,])
 
     useEffect(()=>{
-        const ctx = canvasRef.current.getContext('2d',{alpha:true});
-        ctx.lineWidth=pen.lineWidth;
-        ctx.strokeStyle=pen.strokeStyle;
-    },[pen.strokeStyle,pen.lineWidth])
-    
-    useEffect(()=>{
-        drawImage(index===1?pen.src1:pen.src2,canvasRef,canvasCtx);
-    },[index===1?pen.src1:pen.src2])
-
-    /* useEffect(()=>{
-        const src = index===1?pen.src1:pen.src2;
-        const tmpCanvas = getTempCanvas(src,canvasRef.current.width,canvasRef.current.height);
-        const scale = index===1?pen.src1Scale:pen.src2Scale;
-        const w = canvasRef.current.width;
-        const h = canvasRef.current.height;
-        let sw = w/scale;
-        let sh = h/scale;
-        //canvasRef.current.getContext('2d').lineWidth*=scale;
-        // scale 이 줄었는 늘었는지 확인 할 수 있는 변수 & 로직이 필요...
-        canvasRef.current.getContext('2d').drawImage(tmpCanvas,0,0,sw,sh,0,0,w,h);
-    },[index===1?pen.src1Scale:pen.src2Scale]) */
-
-    const onBeforeBtnClicked = (e)=>{
-        e.preventDefault();
-        if(offset<=0){
-            return false;
+        if(videoComponentRef.current){
+            videoComponentRef.current.style.filter=`brightness(${media_brightness}) saturate(${media_saturation}) contrast(${media_contrast})`;
         }
-        drawImage(srcHistory[offset-1],canvasRef,canvasCtx);
-        setOffset(prevOffset=>prevOffset-1);
-    }
+    },[
+        media_brightness,
+        media_saturation,
+        media_contrast
+    ]);
 
-    const onAfterBtnClicked = (e)=>{
-        e.preventDefault();
-        if(offset>=srcHistory.length-1){
-            return false;
+    const onClickCapture = useCallback(() => {
+        if (videoOn) {
+            canvasRef.current.getContext('2d').filter = `brightness(${media_brightness}) saturate(${media_saturation}) contrast(${media_contrast})`;
+            canvasRef.current.getContext('2d').drawImage(videoComponentRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+            const imageSrc = canvasRef.current.toDataURL('image/png');
+            videoComponentRef.current.pause();
+            videoComponentRef.current.srcObject = null;
+            videoComponentRef.current = null;
+            webcamStreamRef.current.getTracks()[0].stop();
+            webcamStreamRef.current = null;
+            setVideoOn(false);
+            penStateDispatch({ type: actions.CHANGE_BACKGROUND_IMG, bs64: imageSrc });
+            canvasRef.current.getContext('2d').filter=`brightness(1) saturate(1) contrast(1)`;
         }
-        drawImage(srcHistory[offset+1],canvasRef,canvasCtx);
-        setOffset(prevOffset=>prevOffset+1);
-    }
+    }, [
+        videoOn,
+        videoComponentRef.current,
+        canvasRef.current,
+        webcamStreamRef.current,
+        media_brightness,
+        media_saturation,
+        media_contrast
+    ])
 
-    const onEnlargeScaleBtnClicked = (e)=>{
-        e.preventDefault();
-        penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'plus'});
-    }
-
-    const onReduceScaleBtnClicked = (e)=>{
-        e.preventDefault();
-        penStateDispatch({type:actions.CHANGE_SCALE,index,scaleType:'minus'});
-    }
-
-    /* const onConvertToSample=(e)=>{
-        e.preventDefault();
-        if(!isSample){
-            let tempImg = new Image();
-            const src = `/static/sample/sample_img/${sampleImgList[0]}`;
-            tempImg.src = src;
-            console.log(src);
-            tempImg.onload = ()=>{
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = 720;tempCanvas.height = 720;
-                tempCanvas.getContext('2d').drawImage(tempImg,0,0,tempCanvas.width,tempCanvas.height);
-                penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
-            }
-        }else{
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = 720; tempCanvas.height = 720;
-            tempCanvas.getContext('2d').fillStyle='#fff';
-            tempCanvas.getContext('2d').fillRect(0,0,tempCanvas.width,tempCanvas.height);
-            penStateDispatch({type:actions.CHANGE_TO_SAMPLE,bs64:tempCanvas.toDataURL('image/png')});
-        }
-    } */
-
-    const onClickToNextSample=(e)=>{
-        e.preventDefault();
-        sampleStateDispatch({type:'change_offset',direction:'forth'});
-    }
-
-    const onClickToPrevSample=(e)=>{
-        e.preventDefault();
-        sampleStateDispatch({type:'change_offset',direction:'back'});
-    }
-    
-    return(
-        
-        <div>
-            <div ref={btnListWrapRef} className={s.btnListWrap}>
-                <div className={s.historyBtnListWrap}>
-                    <div className={s.historyBtnWrap}>
-                        <Button onClick={onBeforeBtnClicked}>
-                            <FontAwesomeIcon style={{width:10.5,height:10.5}} icon={faUndo} />
-                        </Button>
-                    </div>
-                    <div className={s.historyBtnWrap}>
-                        <Button onClick={onAfterBtnClicked}>
-                            <FontAwesomeIcon style={{width:10.5,height:10.5}} icon={faRedo} />
-                        </Button>
-                    </div>
+    return (
+        <CanvasContainer>
+            <CanvasWrapper>
+                <div className="canvas-cover">
+                    {
+                        videoOn &&
+                        <video className="video-component" ref={videoComponentRef} playsInline />
+                    }
+                    <canvas
+                        id={`canvas`}
+                        onMouseDown={canvasFunctionList[pen.mode].mouseDown}
+                        onMouseUp={canvasFunctionList[pen.mode].mouseUp}
+                        onMouseMove={canvasFunctionList[pen.mode].mouseMove}
+                        ref={canvasRef}
+                    />
+                    {
+                        loadingCallAPI&&(
+                            <div className="loading-component">
+                                <img src="/assets/gif/giphy-unscreen.gif" alt="loading=image" />
+                            </div>
+                        )
+                    }
+                    {
+                        (globalState === 0&&!videoOn) && (
+                            <div onClick={onClickCameraOn} className="camera-button-cover">
+                                <div className='camera-comment-wrapper'>
+                                    <p className="camera-icon-box">
+                                        <FontAwesomeIcon icon={faCamera} />
+                                    </p>
+                                    <p className="camera-text-box">
+                                        사진 촬영하기
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {
+                        videoOn && (
+                            <div className="camera-controller-wrapper">
+                                <button onClick={turnCameraOff} className="camera-off-button">
+                                    카메라 Off
+                                </button>
+                                <button onClick={onClickCapture} className="camera-capture-button">
+                                    캡처
+                                </button>
+                            </div>
+                        )
+                    }
                 </div>
-                <div className={s.historyBtnListWrap}>
-                    <div className={s.historyBtnWrap}>
-                        <Button onClick={onEnlargeScaleBtnClicked}>
-                            <FontAwesomeIcon icon={faSearchPlus} />
-                        </Button>
-                    </div>
-                    <div className={s.historyBtnWrap}>
-                        <Button onClick={onReduceScaleBtnClicked}>
-                            <FontAwesomeIcon icon={faSearchMinus} />
-                        </Button>
-                    </div>
-                </div>
-                <div className={s.inputLabelBtnWrap}>
-                    <Button>
-                        {index===1
-                            &&
-                        <Label htmlFor={s.loadImage}>
-                            <span>Load Image</span><FontAwesomeIcon style={{width:12.5,height:12.5}} icon={faImage} />
-                        </Label>}
-                        {index===2
-                            &&
-                        <Label>
-                            <span>Save Image</span><FontAwesomeIcon style={{width:12.5,height:12.5}} icon={faSave} />
-                        </Label>}
-                    </Button>
-                </div>
-            </div>
-            {index===1&&<Input id={s.loadImage} onChange={onChangeInputFile} type="file" accept="image/*"/>}
-            <div>
-                {  
-                    index===1&&
-                    <span style={{backgroundColor:'#0f0544',position:"absolute",top:'45%',left:'1.5%',zIndex:'20'}}>
-                        <Button style={{backgroundColor:'#0f0544',border:'none'}} onClick={onClickToPrevSample}>
-                            <FontAwesomeIcon icon={faChevronLeft}/>
-                        </Button>
-                    </span>
-                }
-                <canvas 
-                style={{width:canvasWidth,height:canvasWidth}}
-                id={`canvas${index}`}
-                className={s.canvas}
-                onMouseDown={canvasFunctionList[pen.mode].mouseDown}
-                onMouseUp={canvasFunctionList[pen.mode].mouseUp}
-                onMouseMove={canvasFunctionList[pen.mode].mouseMove}
-                ref={canvasRef} className={s.canvas}/>
-                {
-                    index===1&&
-                    <span style={{backgroundColor:'#0f0544',position:"absolute",top:'45%',right:'1.5%',zIndex:'20'}}>
-                        <Button style={{backgroundColor:'#0f0544',border:'none'}} onClick={onClickToNextSample}>
-                            <FontAwesomeIcon icon={faChevronRight}/>
-                        </Button>
-                    </span>
-                }
-                {
-                    index===2&&
-                    onProgress&&
-                    (
-                        <div style={{width:canvasWidth,height:canvasWidth,position:"absolute",top:0,left:0,zIndex:'20'}}>
-                            <img src= "/static/gif/giphy.gif" style={{ color:'#0f0544',display:'block',width:'100%',height:'100%'}}/>
-                        </div>
-                    )
-                }
-            </div>
-        </div>
+            </CanvasWrapper>
+        </CanvasContainer>
     )
 })
 

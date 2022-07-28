@@ -5,7 +5,7 @@ import { faCircle } from '@fortawesome/free-solid-svg-icons';
 const Pallete=memo(({actionType})=>{
     const colorArr =[
         "#eb3a34","#e65d0e","#edc307","#a0ed07","#07f74b",
-        "#07dff7","#0717f7","#9309e3","#f705e7","#f70279"
+        "#07dff7","#0717f7","#9309e3","#f705e7","#f70279","#000000"
     ]
 
     return(

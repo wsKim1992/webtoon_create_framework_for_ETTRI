@@ -1,201 +1,366 @@
-import React,{createContext, useRef,useState, useReducer,useMemo, useEffect} from 'react';
-import PropTypes from 'prop-types';
+import React, { createContext, useState, useReducer, useMemo, useEffect, useCallback } from 'react';
 
-import { useSelector } from 'react-redux';
-import { withRouter} from 'react-router';
-/* import {BrowserRouter} from 'react-router-dom';
-import { TransitionGroup, CSSTransition } from 'react-transition-group'; */
-import Hammer from 'rc-hammerjs';
-/* import MapsGoogle from '../../pages/components/maps/google';
-import CoreTypography from '../../pages/typography'; */
-/* import Dashboard from '../../pages/dashboard'; */
+import { useDispatch, useSelector } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import Header from '../Header';
-import Sidebar from '../Sidebar';
-import s from './Layout.module.scss';
+import styled from 'styled-components';
 import CanvasWrap from '../Canvas/CanvasWrap';
-
+import SettingBar from '../SettingBar';
+import { INIT_CALL_API } from "../../reducers/callAPIReducer";
 //canvas context 의 상태값을 바꿔주는 역할
-export const actions={
-  CHANGE_STROKE_STYLE:"change_strokeStyle",
-  CHANGE_LINE_WIDTH:"change_lineWidth",
-  CHANGE_SCALE:"change_scale",
-  CHANGE_HISTORY:"change_history",
-  CHANGE_MODE : "change_mode",
-  CHANGE_BACKGROUND_IMG:"change_background_img",
-  CHANGE_SRC:"change_src",
-  CHANGE_TO_SAMPLE:"change_to_sample",
-  ON_PROGRESS:"on_progress",
-  INIT:"init",
+export const actions = {
+  CHANGE_STROKE_STYLE: "change_strokeStyle",
+  CHANGE_LINE_WIDTH: "change_lineWidth",
+  CHANGE_SCALE: "change_scale",
+  CHANGE_HISTORY_FRONT: "change_history_FRONT",
+  CHANGE_HISTORY_BACK: "change_history_BACK",
+  CHANGE_MODE: "change_mode",
+  CHANGE_BACKGROUND_IMG: "change_background_img",
+  CHANGE_SRC: "change_src",
+  CHANGE_TO_SAMPLE: "change_to_sample",
+  CHANGE_SRC2ARR_OFFSET_FRONT: "change_src2arr_offset_front",
+  CHANGE_SRC2ARR_OFFSET_BACK: "change_src2arr_offset_back",
+  CHANGE_SRC1ARR_OFFSET_BACK: "change_src1arr_offset_front",
+  CHANGE_SRC1ARR_OFFSET_FRONT: "change_src1arr_offset_back",
+  ON_PROGRESS: "on_progress",
+  CHANGE_GLOBAL_STATE: 'CHANGE_GLOBAL_STATE',
+  INIT: "init",
 }
 
-//canvas 에 그릴때 pen의 모드& canvas의 상태를 설정해주는 변수 
-//pen의 모드:1.brush 2.eraser 3.geometry 4.color-picker
 export const modes = {
-  BRUSH:"brush",ERASER:"eraser",GEOMETRY_CIRCLE:"geometry-circle",
-  GEOMETRY_SQUARE :"geometry-square",GEOMETRY_POLYGON:"geometry-polygon",
-  COLOR_PICKER:"color-picker",TEXT:"text",UPLOAD:"upload",FILLUP:"fill-up",
+  BRUSH: "brush", ERASER: "eraser", GEOMETRY_CIRCLE: "geometry-circle",
+  GEOMETRY_SQUARE: "geometry-square", GEOMETRY_POLYGON: "geometry-polygon",
+  COLOR_PICKER: "color-picker", TEXT: "text", UPLOAD: "upload", FILLUP: "fill-up",
 }
 
 const InitialState = {
-  
-  onProgress:false,
-  pen:{
-    mode:modes.BRUSH,
-    lineWidth:4,
-    strokeStyle:'#000',
-    scaleFactor:1,
-    src1:null,
-    src2:null,
-    src1Scale:1,
-    src2Scale:1,
+  globalState: 0,
+  onProgress: false,
+  urlObj: null,
+  colorizeImg: null,
+  pen: {
+    mode: modes.BRUSH,
+    lineWidth: 4,
+    strokeStyle: '#000',
+    scaleFactor: 1,
+    originalSrc: null,
+    src1: null,
+    src2: null,
+    src1Scale: 1,
+    src2Scale: 1,
+    src1Arr: null,
+    src1ArrOffset: 0,
+    src2Arr: null,
+    src2ArrOffset: 0,
   },
-  history:{
-    src1History:[],
-    src2History:[],
+  history: {
+    src1Offset: 0,
+    src1History: [],
+    src2History: [],
   }
 }
 
-export const PenManagerContext = createContext({isSample:InitialState.isSample,pen:InitialState.pen
-  ,history:InitialState.history
-  ,penStateDispatch:()=>{}});
+export const PenManagerContext = createContext({
+  onProgress: false, pen: InitialState.pen
+  , history: InitialState.history, globalState: 0
+  , penStateDispatch: () => { }, urlObj: InitialState.urlObj, colorizeImg: InitialState.colorizeImg
+});
 
-const penReducer = (state,action)=>{
+const penReducer = (state, action) => {
   const type = action.type;
-  switch(type){
-    case actions.ON_PROGRESS:{
-      console.log(state.onProgress);
-      return {...state,onProgress:true}
+  switch (type) {
+    case actions.ON_PROGRESS: {
+      return { ...state, onProgress: true }
 
     }
-    case actions.CHANGE_MODE:{
+    case actions.CHANGE_MODE: {
       const mode = action.mode;
       let pen = {}
-      if(mode===modes.ERASER){
-        pen = {...state.pen,mode:modes.BRUSH,strokeStyle:'#fff'}
-      }else{
-        pen = {...state.pen,mode};
+      if (mode === modes.ERASER) {
+        pen = { ...state.pen, mode: modes.BRUSH, strokeStyle: '#fff' }
+      } else {
+        pen = { ...state.pen, mode };
       }
-      return {...state,pen};
+      return { ...state, pen };
     }
-    case actions.CHANGE_BACKGROUND_IMG:{
-      const bs64 = action.bs64;
-      let offset = action?.offset;
-      let history = {...state.history};
-      let src1History = history.src1History;
-      if(offset&&offset<src1History.length-1){
-        src1History=src1History.slice(0,offset+1);
-      }
-      src1History.push(bs64);
-      history = {...state.history,src1History};
-      const newPen = {...state.pen,src1:bs64};
-      return {...state,pen:newPen,history,isSample:action.isSample};
+    case actions.CHANGE_BACKGROUND_IMG: {
+      const { bs64 } = action;
+      let srcHistory = [bs64];
+      const history =
+        { ...state.history, src1History: srcHistory, src1Offset: srcHistory.length - 1 }
+      let newPen = null;
+      newPen = { ...state.pen, src1: bs64 }
+
+      if (state.onProgress) return { ...state, pen: newPen, history, onProgress: false, globalState: 1 }
+      else return { ...state, pen: newPen, history, globalState: 1, urlObj: null };
+      /* return {...state,pen:newPen,history}; */
     }
-    case actions.CHANGE_STROKE_STYLE:{
-      const strokeStyle=action.strokeStyle;
-      const newPen = {...state.pen,strokeStyle:strokeStyle}
-      return{...state,pen:newPen};
+    case actions.CHANGE_STROKE_STYLE: {
+      const strokeStyle = action.strokeStyle;
+      const newPen = { ...state.pen, strokeStyle: strokeStyle }
+      return { ...state, pen: newPen };
     }
-    case actions.CHANGE_LINE_WIDTH:{
+    case actions.CHANGE_LINE_WIDTH: {
       const boldness = action.boldness;
-      const newPen = {...state.pen,lineWidth:boldness}
-      return {...state,pen:newPen};
+      const newPen = { ...state.pen, lineWidth: boldness }
+      return { ...state, pen: newPen };
     }
-    case actions.CHANGE_SRC:{
-      const {index,bs64} = action;
-      let history = {...state.history};
-      let srcHistory = index===1?history.src1History:history.src2History;
-      let src = index===1?{...state.src1}:{...state.src2};
-      let offset = action?.offset;
-      if(offset&&offset<srcHistory.length-1){
-        srcHistory=srcHistory.slice(0,offset+1);
+    case actions.CHANGE_SRC: {
+      const { bs64 } = action;
+      let history = { ...state.history };
+      let srcHistory = history.src1History;
+      let src = { ...state.src1 };
+      let offset = history.src1Offset;
+      if (offset < srcHistory.length - 1) {
+        srcHistory = srcHistory.slice(0, offset + 1);
       }
       src = bs64;
       srcHistory.push(src);
-      const pen = index===1?{...state.pen,src1:src}:{...state.pen,src2:src};
-      const newHistory = index===1?{...state.history,src1History:srcHistory}:{...state.history,src2History:srcHistory}
-      if(state.onProgress)return{...state,pen,history:newHistory,onProgress:false}
-      else return {...state,pen,history:newHistory};
+      const pen = { ...state.pen, src1: src };
+      const newHistory = { ...state.history, src1History: srcHistory, src1Offset: srcHistory.length - 1 };
+
+      return { ...state, pen, history: newHistory };
     }
-    case actions.CHANGE_SCALE:{
-      const {index,scaleType}=action;
-      let pen = {...state.pen};
-      let scale = index===1?pen.src1Scale:pen.src2Scale;
-      scaleType==='plus' ? scale*=2:scale/=2;
-      if(scaleType==='minus'&&scale<1){return{...state};}
-      else if(scaleType==='plus'&&scale>16){return {...state};} 
-      pen = index===1? {...state.pen,src1Scale:scale}:{...state.pen,src2Scale:scale};
-      return {...state,pen}
+    case actions.CHANGE_HISTORY_BACK: {
+      const { pen, history } = state;
+      if (history.src1Offset - 1 < 0) { return state; }
+      pen.src1 = history.src1History[history.src1Offset - 1];
+      history.src1Offset -= 1;
+      return { ...state, pen, history };
     }
-    case actions.CHANGE_TO_SAMPLE:{
-      const {bs64}=action;
-      const isSample = true;
-      const newHistory = {...state.history,src1History:[bs64]};
-      const pen = {...state.pen,src1:bs64}
-      return {...state,isSample,history:newHistory,pen};
+    case actions.CHANGE_HISTORY_FRONT: {
+      const { pen, history } = state;
+      if (history.src1Offset + 1 >= history.src1History.length) { return state; }
+      pen.src1 = history.src1History[history.src1Offset + 1];
+      history.src1Offset += 1;
+      return { ...state, pen, history };
     }
-    case actions.INIT:{
-      const history = {...state.history};
-      history.src1History=[];
-      history.src2History=[];
-      const pen = Object.assign({},InitialState.pen);
-      return {...state,isSample:false,history,pen}
+    case actions.CHANGE_SRC2ARR_OFFSET_FRONT: {
+      const { src2ArrOffset } = { ...state.pen };
+      const nextOffset = src2ArrOffset + 1 < state.pen.src2Arr.length ? src2ArrOffset + 1 : 0;
+      const src2 = state.pen.src2Arr[nextOffset];
+      const pen = { ...state.pen, src2ArrOffset: nextOffset, src2 }
+      return { ...state, pen }
     }
-    default:{
-      return{...state}
+    case actions.CHANGE_SRC2ARR_OFFSET_BACK: {
+
+      const { src2ArrOffset } = { ...state.pen };
+      const nextOffset = src2ArrOffset - 1 >= 0 ? src2ArrOffset - 1 : state.pen.src2Arr.length - 1;
+      const src2 = state.pen.src2Arr[nextOffset];
+      const pen = { ...state.pen, src2ArrOffset: nextOffset, src2 }
+      return { ...state, pen }
+    }
+    case actions.INIT: {
+      const history = { ...state.history };
+      history.src1History = [];
+      history.src2History = [];
+      history.src1Offset = 0;
+      const pen = { ...state.pen };
+      pen.src1 = null;
+      pen.src2 = null;
+      pen.src1Arr = null;
+      pen.originalSrc = null;
+      pen.src2Arr = null;
+      pen.src1ArrOffset = 0;
+      pen.src2ArrOffset = 0;
+      return { ...state, isSample: false, history, pen, globalState: 0, colorizeImg: null, urlObj: null };
+    }
+    case actions.CHANGE_GLOBAL_STATE: {
+      const { bs64, newGlobalState } = action;
+      let { globalState, history, pen } = state;
+      const newHistory = { ...history, src1History: [bs64], src1Offset: 0 };
+      const newPen = { ...pen, src1: bs64 }
+      if (globalState === 1) {
+        return {
+          ...state, history: newHistory, pen: newPen, globalState: newGlobalState,
+          urlObj: action.urlObj, colorizeImg: null
+        }
+      } else if (globalState === 3) {
+        return { ...state, history: newHistory, pen: newPen, globalState: newGlobalState, colorizeImg: bs64 };
+      } else {
+        return { ...state, history: newHistory, pen: newPen, globalState: newGlobalState };
+      }
+    }
+    default: {
+      return state
     }
   }
 }
 
-const Layout =()=> {
-  const [PenState,penStateDispatch]=useReducer(penReducer,InitialState);
-  const [entireWidth,setEntireWidth]=useState(window.innerWidth);
-  const [entireHeight,setEntireHeight] = useState(window.innerHeight);
-  const wrapRef = useRef(null);
+const LayoutComponent = styled.div`
+  width:100%;
+  height:100%;
+  background-color:#bbc7be;
+`;
+
+const LayoutWrap = styled.div`
+  width:100%;
+  height:100%;
+  .content-wrapper{
+    width:100%;height:100%;
+    .content-body-wrapper{
+      width:100%;
+      height:calc(100% - 65.5px);
+      display:flex;
+      flex-direction:row;
+      .canvas-container{
+        width:calc(100% - 315.5px);
+        height:100%;
+      }
+      .sideBar-container{
+        width:315.5px;
+        height:100%;
+      }
+    }
+  }
+  @media screen and (max-width:975px){
+    .content-wrapper{
+      .content-body-wrapper{
+        position:relative;
+        height:calc(100% - 65.5px);
+        .canvas-container{
+          width:100%;
+        }
+        .sideBar-container{
+          position:absolute;
+          top:0;right:-315.5px;
+          z-index:10;
+          width:315.5px;
+          height:100%;
+          transition:all 0.5s ease-out;
+          &.on{
+            right:0px;
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const convertIntoBase64 = (src) => {
+  return new Promise((resolve, reject) => {
+    const tempImg = new Image();
+    tempImg.width=512;
+    tempImg.height=512;
+    tempImg.src = src;
+    tempImg.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = tempImg.width;
+      canvas.height = tempImg.height;
+      canvas.getContext('2d').drawImage(tempImg, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/png'));
+    }
+  })
+};
+
+const showSettingBarFunc = ()=>{
+  const {innerWidth} = window;
+    if(innerWidth<=975){
+      return false;
+    }else{
+      return true;
+    }
+}
+
+const Layout = () => {
+  const [PenState, penStateDispatch] = useReducer(penReducer, InitialState);
+  const [showSettingBar, setShowSettingBar] = useState(showSettingBarFunc());
+
+  const toggleShowSettingBar = useCallback(() => {
+    console.log('toggleShowSettingBar');
+    setShowSettingBar(prev => !prev);
+  }, [])
+
   const {
-    sidebarOpened,
-    sidebarPosition,
-    sidebarVisibility,
-  }= useSelector(state=>state.navigation);
+    loadingCallAPI,
+    failureCallAPI,
+    successCallAPI,
+    dataFromAPI
+  } = useSelector(state => state.callAPIReducer);
 
-  const penData = useMemo(()=>{
-    return {isSample:PenState.isSample,penStateDispatch:penStateDispatch,pen:PenState.pen,history:PenState.history,onProgress:PenState.onProgress}
-  },[PenState])
+  const dispatch = useDispatch();
 
-  const {isFetching,userInfo}=useSelector(state=>state.auth);
+  useEffect(() => {
+    if (!loadingCallAPI && successCallAPI) {
+      if (dataFromAPI) {
+        try {
+          if (PenState.globalState === 1) {
+            console.log(dataFromAPI.input_path[1]);
+            convertIntoBase64(`/${dataFromAPI.input_path[1]}`).then(result => {
+              dispatch({ type: INIT_CALL_API });
+              penStateDispatch({ type: actions.CHANGE_GLOBAL_STATE, bs64: result, urlObj: { ...dataFromAPI }, newGlobalState: 2 });
+            });
+          } else if (PenState.globalState === 3) {
+            convertIntoBase64(`/${dataFromAPI.output_path}`).then(result => {
+              dispatch({ type: INIT_CALL_API });
+              penStateDispatch({ type: actions.CHANGE_GLOBAL_STATE, bs64: result, newGlobalState: 4 });
+            });
+          } else if (PenState.globalState === 4) {
+          }
+        } catch (err) {
+          console.log(err);
+          window.alert("이미지 로드 오류 발생!");
+          dispatch({ type: INIT_CALL_API });
+        }
+      }
+    } else if (!loadingCallAPI && failureCallAPI) {
+      dispatch({ type: INIT_CALL_API });
+    }
+  }, [
+    loadingCallAPI,
+    failureCallAPI,
+    successCallAPI,
+    dataFromAPI,
+    PenState.globalState
+  ])
 
-  useEffect(()=>{
-    window.addEventListener("resize",(e)=>{
-      setEntireWidth(window.innerWidth); 
-      setEntireHeight(window.innerHeight);
-    })
+  const onResize = useCallback(()=>{
+    setShowSettingBar(showSettingBarFunc())
   },[])
 
+  useEffect(()=>{
+    window.addEventListener("resize",onResize);
+    return ()=>{
+      window.removeEventListener("resize",onResize);
+    }
+  },[])
+
+  const penData = useMemo(() => {
+    return {
+      isSample: PenState.isSample, penStateDispatch: penStateDispatch, pen: PenState.pen, history: PenState.history,
+      onProgress: PenState.onProgress,
+      globalState: PenState.globalState,
+      urlObj: PenState.urlObj,
+      colorizeImg: PenState.colorizeImg
+    };
+  }, [PenState])
+
+  /* const {isFetching,userInfo}=useSelector(state=>state.auth);
+ */
 
   return (
-
-    <div
-      className={[
-        s.root,
-        'sidebar-' + sidebarPosition,
-        'sidebar-' + sidebarVisibility,
-      ].join(' ') }
-    >
-      {!isFetching&&userInfo&&
-        <div className={s.wrap} style={{width:entireWidth*0.971,height:entireHeight}}>
-          <PenManagerContext.Provider value={penData}>
-            <Header headerWidth={entireWidth*0.971} />
-              <Hammer >
-                <main className={s.content} style={{width:entireWidth*0.971}}>
-                    <Sidebar sidebarWidth={parseFloat(entireWidth*0.03)}/>
-                    <CanvasWrap canvasWrapWidth={entireWidth*0.971} canvasWrapHeight={entireHeight*0.936}/>
-                </main>
-              </Hammer>
-          </PenManagerContext.Provider>
-        </div>}
-    </div>
+    <LayoutComponent>
+      <LayoutWrap>
+        <PenManagerContext.Provider value={penData}>
+          <div className="content-wrapper">
+            {/* <Sidebar/> */}
+            <Header toggleShowSettingBar={toggleShowSettingBar} />
+            <div className="content-body-wrapper">
+              <div className="canvas-container">
+                <CanvasWrap />
+              </div>
+              <div className={`sideBar-container ${showSettingBar&&'on'}`}>
+                <SettingBar />
+              </div>
+              
+            </div>
+          </div>
+        </PenManagerContext.Provider>
+      </LayoutWrap>
+    </LayoutComponent>
   );
-  
+
 }
 
 

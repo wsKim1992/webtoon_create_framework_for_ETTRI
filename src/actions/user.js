@@ -7,9 +7,62 @@ export const LOGOUT_REQUEST = 'LOGOUT_REQUEST';
 export const LOGOUT_SUCCESS = 'LOGOUT_SUCCESS';
 export const LOGOUT_FAILURE = 'LOGOUT_FAILURE';
 export const INIT_INFO = 'INIT_INFO';
+export const CHECK_REQUEST = 'CHECK_REQUEST';
 
 export const init=()=>{
     return {type:INIT_INFO}
+}
+
+export const checkSessionNotExists=()=>{
+    return (dispatch,state)=>{
+        dispatch(requestCheckSessionExsits());
+        axios.post('/user/check_no_session')
+        .then(resp=>{
+            receiveLogout();
+        })
+        .catch(err=>{
+            if(err.response.status>=500){
+                logoutError(err.response.data.message);
+            }else{
+                receiveLogin(state().auth.userInfo);
+            }
+        })
+    }
+}
+
+export const checkSessionExists=()=>{
+    return (dispatch,state)=>{
+        const {userInfo}=state().auth;
+        if(userInfo){
+            checkSessionNotExists();
+        }else if(!userInfo&&localStorage.getItem('token')){
+            dispatch(requestCheckSessionExsits());
+            const headers = {headers:{'Authorization':localStorage.getItem('token')}};
+            axios.post('/user/authenticate_user',{},headers)
+            .then(resp=>{
+                const {success,email}=resp.data;
+                if(success)dispatch(receiveLogin({email}))
+            }).catch(err=>{
+                if(err.response.status>=500){
+                    dispatch(loginError(err.response.data.message));
+                }else if(err.response.status>=400){
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('authenticated');
+                    dispatch(loginError(err.response.data.message));
+                }else{
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('authenticated');
+                    dispatch(loginError('알 수 없는 에러..'));
+                }
+            })
+        }else{
+            dispatch(loginError('로그인을 해주세요!'));
+        }
+    }    
+}
+
+export const requestCheckSessionExsits=()=>{
+    return {type:CHECK_REQUEST};
 }
 
 export const requestLogin=()=>{
@@ -33,7 +86,6 @@ export function loginError(payload) {
 export function loginUser(creds) {
     return (dispatch) => {
         
-        
         const dataToSend={
             email:creds.email,
             password:creds.password
@@ -55,7 +107,6 @@ export function loginUser(creds) {
             }
         })
         .catch(err=>{
-            console.error(err);
             dispatch(loginError('접속에러!'));
         })
     }
@@ -78,7 +129,6 @@ const requestLogout=()=>{
 }
 
 export function logoutUser({history}) {
-    console.log('logoutUser');
     if(localStorage.getItem('token')){
         return (dispatch,getState) => {
             dispatch(requestLogout());

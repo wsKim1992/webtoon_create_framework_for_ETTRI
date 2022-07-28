@@ -8,35 +8,20 @@ $Collapse_left:50.5px;
             font-size: $font-size-base;
         }
 
-        a {
-            font-weight: $font-weight-thin;
-            display: flex;
-            flex-direction: row;
-            justify-content: start;
-            align-items: center;
-            color: $icon-color;
-            text-decoration: none;
-            cursor: pointer ;
-
-            &:hover {
-            text-decoration: none;
-            color: inherit;
-            }
-        }
-
         &:last-child > a {
             border-bottom: 1px solid $sidebar-item-border-color;
         }
 
         > a {
             position: relative;
+            display:flex;
+            justify-content: center;
             align-items: center;
             padding: 10px;
             border-top: 1px solid $sidebar-item-border-color;
             white-space: nowrap;
             border-radius: .25rem;
             width:100%;
-
             &:hover {
                 background-color: $sidebar-item-hover-bg-color;
             }
@@ -48,7 +33,6 @@ $Collapse_left:50.5px;
 
         .icon {
             display:inline-block;
-            margin-right: .5rem;
             height: 15.5px;
             width: 15.5px;
             text-align: center;
@@ -99,16 +83,17 @@ $Collapse_left:50.5px;
     }
 
     .color_picker_panel{
-        position:absolute;
-        top:0;
-        left:100%;
-    
+        width:auto;
+        position: absolute;
+        top: 0;
+        left: 105.5%;
+        background: #0f0544;
+        border-radius: 15.5px;
+        z-index:15;
         border: none;
         box-shadow: none;
         margin: 0;
-        border-radius: 0;
         color: white;
-        background-color: rgba(18, 20, 43, 0.42);
 
         a.headerLinkActive {
             font-size: 1rem;
@@ -134,23 +119,27 @@ $Collapse_left:50.5px;
 
     .ControllBold_wrap{
         position:absolute;
-        top:$Collapse_top;
-        left:$Collapse_left;
+        top:0;
+        left:105.5%;
+        z-index:15;
         width:40px;
         height:312px;
+        background: #0f0544;
         /*align-items: center; */
-        background-color: $sidebar-bg-color;
+        background-color: transparent;
         .cylinder{
             display:flex;
             flex-direction: column-reverse;
             width:40px;
             height:312px;
             overflow: hidden;
-            border:1px solid  #C1C3CF;
+            border:1px solid  #0f0544;
             border-radius: 15.5px;
+            background-color: #fff;
+            box-sizing: content-box;
             .gage{
                 width:100%;
-                background-color: #C1C3CF;
+                background-color: #0f0544;
             }
         }
     }

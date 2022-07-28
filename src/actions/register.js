@@ -1,4 +1,4 @@
-import {toast} from 'react-toastify';
+
 import axios from 'axios';
 export const REGISTER = 'REGISTER';
 export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
@@ -50,7 +50,6 @@ export const updateRegisterState = (data)=>{
 }
 ////////////////////
 const callSendEmailAPI=(email)=>{
-    const success= false;
     return new Promise((resolve,reject)=>{
         const headers = {headers:{'content-type':'application/json'}};
         axios.post('/user/sendMail',{email},headers)
@@ -126,10 +125,6 @@ const callSendingCodeAPI=(code)=>{
                 reject({message:err.response.data.message});
             } 
         })
-        /* setTimeout(()=>{
-            if(code===compareCode){resolve({success:true,msg:'code 전송 성공!'})}
-            else {reject({success:false,msg:'code 전송 실패!'})}
-        },100) */
     })
 }
 

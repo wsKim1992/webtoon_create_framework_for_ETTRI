@@ -1,9 +1,8 @@
-import React,{useState,useMemo,useEffect,useRef,useCallback} from 'react';
-import {useDispatch,useSelector} from 'react-redux'
-import PropTypes from 'prop-types';
-import { withRouter, Redirect, Link } from 'react-router-dom';
-import { Container, Alert, Button, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Input, Label } from 'reactstrap';
-import { updateRegisterState,registerUser, registerError,sendEmailRequest,
+import React,{useState,useEffect,useRef} from 'react';
+import {useDispatch,useSelector} from 'react-redux';
+import { withRouter, Link } from 'react-router-dom';
+import { Container, Button, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Input, Label } from 'reactstrap';
+import { updateRegisterState,sendEmailRequest,
     TYPE_EMAIL,TYPE_CODE,TYPE_PASSWORD,FINISHED,initState,sendEmailFailed,sendRegistFailed, REGISTER_SUCCESS, SEND_EMAIL_FAILED } from '../../actions/register';
 import styled from 'styled-components'
 
@@ -143,60 +142,12 @@ const Register =(props)=> {
         }
     },[])
 
-    /* const errorFlag = useMemo(()=>{
-        return errorMessage?true:false;
-    },[errorMessage])
-
-    const focusEvent=useCallback(()=>{
-        console.log('focusEvent');
-        console.log(`error ? : ${errorFlag}`);
-        if(!errorFlag)return false;
-        switch (registerState){
-            case TYPE_EMAIL:{
-                console.log('type email');
-                emailRef.current.focus();
-                break;
-            }
-            case TYPE_CODE:{
-                codeRef.current.focus();
-                break;
-            }
-            case TYPE_PASSWORD:{
-                passwordRef.current.fccus();
-                break;
-            }
-            default:{break;}
-        }
-        if(registerState===TYPE_EMAIL){
-            emailRef.current.focus();
-        }
-    },[errorFlag])
-
-    focusEvent(); */
-
-    const checkPassword=()=>{
-        if (isPasswordValid()) {
-            if (password) {
-                dispatch(sendRegistFailed("Password field is empty"));
-            } else {
-                dispatch(sendRegistFailed("Passwords are not equal"));
-            }
-        }
-    }
 
     const isPasswordValid=()=> {
        return password && password === confirmPassword;
     }
 
     
-    /* const {from} = props.location.state || {from: {pathname: '/app'}}; // eslint-disable-line
-
-    // cant access login page while logged in
-    if (Login.isAuthenticated(JSON.parse(localStorage.getItem('authenticated')))) {
-        return (
-            <Redirect to={from}/>
-        );
-    } */
 
     const onClickSubmit=(e)=>{
         e.preventDefault();
@@ -348,13 +299,6 @@ const Register =(props)=> {
         </div>
     );
 }
-/* 
-function mapStateToProps(state) {
-    return {
-        isFetching: state.register.isFetching,
-        errorMessage: state.register.errorMessage,
-    };
-} */
 
 export default withRouter(Register);
 

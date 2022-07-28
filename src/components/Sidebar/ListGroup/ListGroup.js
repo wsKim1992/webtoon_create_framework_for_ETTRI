@@ -1,7 +1,7 @@
-import React ,{useState,memo, useContext, useMemo, useCallback,useRef} from 'react';
+import React ,{memo, useContext, useMemo, useCallback} from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faArrowCircleLeft,faArrowCircleRight} from "@fortawesome/free-solid-svg-icons";
+import {faArrowCircleLeft} from "@fortawesome/free-solid-svg-icons";
 import s from './ListGroup.module.scss';
 import { Collapse } from 'reactstrap';
 import Pallete from './Pallete/Pallete'
@@ -49,9 +49,7 @@ const ListGroup = memo(({sidebarWidth,toolInfo,color,id})=>{
 
     },[selected])
 
-    const AtagClassName = useMemo(()=>{
-        return selected?s.selected:'';
-    },[selected])
+    
 
     const renderFontAwesomeIcon = useCallback(()=>{
         return toolType==='upload'?

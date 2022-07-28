@@ -2,46 +2,52 @@ const proxy = require("http-proxy-middleware");
 
 module.exports = function(app){
     app.use(
+        proxy('/colorize',{
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+        })
+    ),
+    app.use(
         proxy('/request_image',{
-            target:'http://localhost:8002',
-            changeOrigin:true
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+            rejectUnauthorized: false
         }),
     ),
     app.use(
+        proxy('/colorLayer',{
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+            rejectUnauthorized: false
+        })
+    )
+    app.use(
         proxy('/static/log',{
-            target:'http://localhost:8001',
-            changeOrigin:true
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+            rejectUnauthorized: false
         })
-    ),
-    app.use(
-        proxy('/static/sample/sample_img/sample1_imgToPen',{
-            target:'http://localhost:8001',
-            changeOrigin:true
-        })
-    ),
-    app.use(
-        proxy('/static/sample/sample_img/sample2_simpleContiToPen',{
-            target:'http://localhost:8001',
-            changeOrigin:true
-        })
-    ),
-    app.use(
-        proxy('/static/sample/sample_img/sample3_detailContiToPen',{
-            target:'http://localhost:8001',
-            changeOrigin:true
-        })
-    ),
-    app.use(
-        proxy('/static/gif',{
-            target:'http://localhost:8001',
-            changeOrigin:true
-        }) 
     ),
     app.use(
         '/user',
         proxy({
-            target:'http://localhost:9993',
-            changeOrigin:true
+            target:'https://localhost:9997',
+            changeOrigin:true,
+            secure: false,
+            rejectUnauthorized: false
+        })
+    ),
+    app.use(
+        '/assets',
+        proxy({
+            target:'https://localhost:9997',
+            changeOrigin:true,
+            secure: false,
+            rejectUnauthorized: false
         })
     )
 }
