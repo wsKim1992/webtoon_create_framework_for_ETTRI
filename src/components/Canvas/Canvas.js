@@ -247,7 +247,6 @@ const Canvas = memo(() => {
     }, [canvasRef.current])
 
     const windowBeforeUnload = useCallback(() => {
-        console.log("onbeforeunload callback");
         if (canvasRef.current) canvasRef.current = null;
         if (originalCanvasRef.current) originalCanvasRef.current = null;
         if (videoComponentRef.current) {
@@ -540,6 +539,8 @@ const Canvas = memo(() => {
 
     const onClickCapture = useCallback(() => {
         if (videoOn) {
+            console.log(videoComponentRef.current.width);
+            console.log(videoComponentRef.current.height);
             canvasRef.current.getContext('2d').filter = `brightness(${media_brightness}) saturate(${media_saturation}) contrast(${media_contrast})`;
             canvasRef.current.getContext('2d').drawImage(videoComponentRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
             const imageSrc = canvasRef.current.toDataURL('image/png');

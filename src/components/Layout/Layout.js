@@ -297,6 +297,12 @@ const Layout = () => {
               penStateDispatch({ type: actions.CHANGE_GLOBAL_STATE, bs64: result, newGlobalState: 4 });
             });
           } else if (PenState.globalState === 4) {
+            const newOutputPath = dataFromAPI.output_path.replace('logs','logs_exp');
+            console.log(newOutputPath);
+            convertIntoBase64(`/${dataFromAPI.output_path}`).then(result => {
+              dispatch({ type: INIT_CALL_API });
+              penStateDispatch({ type: actions.CHANGE_GLOBAL_STATE, bs64: result, newGlobalState: 5 });
+            });
           }
         } catch (err) {
           console.log(err);

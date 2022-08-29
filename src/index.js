@@ -23,6 +23,8 @@ const GlobalStyle = createGlobalStyle`
 	--canvas-function-button:11.5px;
 	--canvas-function-button-icon:14.5px;
 	--call-api-button:13.5px;
+	--paint-canvas-func-title:13.5px;
+	--paint-canvas-func-icon-icon:14.5px;
 
 	--tablet-main-title:18.5px;
 	--tablet-canvas-function-button:9.5px;

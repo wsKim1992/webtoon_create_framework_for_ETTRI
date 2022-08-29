@@ -105,6 +105,27 @@ const APIButtonList = memo(() => {
         }
     }, [globalState, pen.src1, urlObj, colorizeImg])
 
+    const onClickFacialExpressionList = useCallback((evt)=>{
+        if(globalState>=4&&colorizeImg){
+            const {target:ThisElement}=evt;
+            const targetElement = findElement(ThisElement,'expression','choose-face-expression-component')
+            if(targetElement){
+                const {expression}=targetElement.dataset;
+                convertIntoBase64(colorizeImg).then(result => {
+                    let input_image = convertIntoFile(result);
+                    let expression_name = expression;
+                    const formData= new FormData();
+                    formData.append('input_image',input_image);
+                    formData.append('expression_name',expression_name);
+                    dispatch({type:LOADING_CALL_API,data:formData,globalState});
+                })
+
+
+            }
+        }
+        
+    },[globalState,colorizeImg])
+
     return (
         <>
             <div onClick={onClickSettingBar} className="setting-bar">
@@ -119,20 +140,20 @@ const APIButtonList = memo(() => {
                 </div>
                 <div data-api="change-face-expression" className={`button-component ${globalState < 4 && 'disabled'}`}>
                     표정 변경하기
-                    <div className={`choose-face-expression-component ${globalState < 4 && 'off'}`}>
-                        <p className="expression">
+                    <div onClick={onClickFacialExpressionList} className={`choose-face-expression-component ${globalState < 4 && 'off'}`}>
+                        <p className="expression" data-expression='Neutral'>
                             <FontAwesomeIcon icon={faFaceMeh} />
                         </p>
-                        <p className="expression">
+                        <p className="expression" data-expression='Angry'>
                             <FontAwesomeIcon icon={faFaceAngry} />
                         </p>
-                        <p className="expression">
-                            <FontAwesomeIcon icon={faFaceGrin} />
+                        <p className="expression"  data-expression='Happy'>
+                            <FontAwesomeIcon icon={faFaceGrin}/>
                         </p>
-                        <p className="expression">
+                        <p className="expression" data-expression='Surprise'>
                             <FontAwesomeIcon icon={faFaceSurprise} />
                         </p>
-                        <p className="expression">
+                        <p className="expression" data-expression='Sad'>
                             <FontAwesomeIcon icon={faFaceSadCry} />
                         </p>
                     </div>

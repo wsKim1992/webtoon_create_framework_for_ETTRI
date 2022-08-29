@@ -21,6 +21,12 @@ const loadAPIDataFunction=(requestData,globalState)=>{
             };
             return axios.post('/colorize',requestData,config);
         }
+        case 4:{
+            const config = {
+                'content-type':'multipart/form-data',
+            };
+            return axios.post('/animation',requestData,config);
+        }
     }   
     
 }
