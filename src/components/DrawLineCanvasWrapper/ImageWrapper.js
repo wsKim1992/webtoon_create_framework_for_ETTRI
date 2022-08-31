@@ -1,13 +1,15 @@
 import React, { memo, useCallback, useContext, useState, useRef, useEffect } from "react";
 import styled from 'styled-components';
-import { faCamera, faImage } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faImage,faSquareX } from "@fortawesome/free-solid-svg-icons";
+import {faCircleXmark} from "@fortawesome/free-regular-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { convertIntoBase64WithMedia, img_type_obj, src_type_obj, UPLOAD_PERSON_IMAGE, UPLOAD_CARTOONIZED_IMAGE, DrawLineContext } from "../Layout/DrawLineLayout"
 import {
     CanvasSizeContext,SET_WIDTH_AND_HEIGHT,
     INIT_STATE} from '../DrawLineCanvasWrapper';
 import { useSelector } from "react-redux";
-import loadingGIF from '../../assets/gif/giphy.gif';
+import loadingGIF1 from '../../assets/gif/0015.gif';
+import loadingGIF2 from '../../assets/gif/0019.gif';
 
 const EntireContainer = styled.div`
     width:100%;height:100%;
@@ -41,7 +43,7 @@ const EntireContainer = styled.div`
                 justify-content:center;
                 background-color:#fff;
                 img{
-                    width:100%;height:auto;
+                    width:auto;height:auto;
                     object-fit:contain;
                 }
             }
@@ -81,29 +83,7 @@ const EntireContainer = styled.div`
                 }
     
             }
-            .init-component{
-                height:50px;width:100%;
-                position:absolute;
-                bottom:25.5px;;left:0;
-                .init-text-box{
-                    cursor:pointer;
-                    height:100%;width:130px;
-                    font-size:var(--canvas-function-button-icon);
-                    margin: 0 auto;
-                    background: rgba(0,0,0,0.35);
-                    border: 2.5px solid #fff;
-                    color: #fff;
-                    line-height: 50px;
-                    border-radius: 4.5px;
-                    padding: 0;
-                    text-align:center;
-                    font-weight:bold;
-                    &:hover{
-                        color:#000;
-                        background:#fff;
-                    }
-                }
-            }
+            
             .camera-component{
                 position:absolute;
                 top:0;left:0;
@@ -134,6 +114,29 @@ const EntireContainer = styled.div`
                     font-weight:bold;
                 }
                 
+            }
+            .init-component{
+                height:50px;width:auto;
+                position: absolute;
+                bottom: 100%;
+                right: 0;
+                .init-text-box{
+                    cursor:pointer;
+                    height:100%;width:50px;
+                    font-size:25.5px;
+                    margin: 0 auto;
+                    background: rgba(0,0,0,0.35);
+                    color: #fff;
+                    line-height: 50px;
+                    border-radius: 4.5px;
+                    padding: 0;
+                    text-align:center;
+                    font-weight:bold;
+                    &:hover{
+                        color:#000;
+                        background:#fff;
+                    }
+                }
             }
             .file-uploader-box{
                 position:absolute;
@@ -174,7 +177,6 @@ const EntireContainer = styled.div`
     @media screen and (max-width:1270px){
         .image-padding{
             position:relative;
-            overflow:hidden;
             height:0;width:100%;
             padding-top:100%;
             .image{
@@ -188,7 +190,7 @@ const EntireContainer = styled.div`
                 }
                 .init-component{
                     .init-text-box{
-                        font-size: 15.5px;
+                        font-size:19.5px;
                     }
                 }
             }
@@ -208,12 +210,7 @@ const EntireContainer = styled.div`
                     .camera-text-box{
                         font-size: 15.5px;
                     }
-                    .init-component{
-                        .init-text-box{
-                            line-height: 25px;
-                            font-size: 12.5px;
-                        }
-                    }
+                    
                     
                 }
             }
@@ -399,7 +396,7 @@ const ImageWrapper = memo(() => {
                     {
                         loadingCallAPI&&(
                             <div className="loading-component">
-                                <img src={loadingGIF} alt="loading-image" />
+                                <img src={loadingGIF1} alt="loading-image" />
                             </div>
                         )
 
@@ -435,8 +432,7 @@ const ImageWrapper = memo(() => {
                             imageURL&&
                             <div onClick={onClickInit} className="init-component">
                                 <p className="init-text-box">
-                                    <FontAwesomeIcon icon={faCamera} />
-                                    사진 촬영
+                                    <FontAwesomeIcon icon={faCircleXmark} />
                                 </p>
                             </div>
                         )

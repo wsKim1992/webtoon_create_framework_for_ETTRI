@@ -10,7 +10,7 @@ import {
 } from "../Layout/DrawLineLayout";
 import {CanvasSizeContext} from '../DrawLineCanvasWrapper';
 import {LOADING_CALL_DRAWLINE_API} from '../../reducers/callAPIInDrawLinePage'
-import {img_type_obj} from '../Layout/DrawLineLayout';
+import {img_type_obj,output_type} from '../Layout/DrawLineLayout';
 /* import { faCamera } from '@fortawesome/free-solid-svg-icons'; */
 const EntireContainer = styled.div`
     width:100%;height:100%;
@@ -136,7 +136,9 @@ const FunctionBtnWrapper = ()=>{
     const {
         input_image_src,
         input_image_src_type,
-        input_image_type
+        input_image_type,
+        output_image_src,
+        output_image_type
     } = useContext(DrawLineContext);
     const dispatch = useDispatch();
     const functionName = {
@@ -153,18 +155,19 @@ const FunctionBtnWrapper = ()=>{
 
     const onClickContainer = useCallback(async(evt)=>{
         if(!input_image_src){
-            return false;
+            if(!output_image_src)return false;
         }
+        const input_src = output_image_src?output_image_src:input_image_src;
         const {target:thisElement} = evt;
         const findCondition = 'box';
         const endCondition = 'function-btn-list-container';
         const element = findElement(thisElement,findCondition,endCondition);
         if(element){
             const {api_type}=element.dataset;
-            console.log(api_type)
-            let bs64 = input_image_src;
+            let bs64 = input_src;
+            console.log(input_image_src_type);
             if(input_image_src_type===src_type_obj.DIR_PATH){
-                bs64 = await convertIntoBase64(input_image_src,width,height);
+                bs64 = await convertIntoBase64(input_src,width,height);
             }
             const file = convertIntoFile(bs64);
             if(functionName.hasOwnProperty(api_type)){
@@ -184,7 +187,8 @@ const FunctionBtnWrapper = ()=>{
     },[
         input_image_src,
         input_image_src_type,
-        width,height
+        width,height,
+        output_image_src,
     ])
 
     const onClickExpressionList = useCallback(async(evt)=>{
@@ -210,7 +214,8 @@ const FunctionBtnWrapper = ()=>{
     },[
         input_image_src,
         input_image_src_type,
-        width,height
+        width,height,
+        output_image_src
     ])
 
     return (
@@ -246,14 +251,14 @@ const FunctionBtnWrapper = ()=>{
                     <span>배경제거</span>
                 </button>
             </div>
-            <div data-api_type={api_result_type.CONVERT_INTO_LINE} className="box">
+            {/* <div data-api_type={api_result_type.CONVERT_INTO_LINE} className="box">
                 <button disabled={input_image_type!==img_type_obj.PERSON_IMAGE} className={`${input_image_type!==img_type_obj.PERSON_IMAGE?'function-btn disable':'function-btn'}`}>
                     <FontAwesomeIcon icon={faPaintBrush}/>
                     <span>선화변환</span>
                 </button>
-            </div>
+            </div> */}
             <div data-api_type={api_result_type.CARTOONIZE} className="box">
-                <button disabled={input_image_type!==img_type_obj.PERSON_IMAGE} className={`${input_image_type!==img_type_obj.PERSON_IMAGE?'function-btn disable':'function-btn'}`}>
+                <button disabled={output_image_type===output_type.LINE||input_image_type!==img_type_obj.PERSON_IMAGE} className={`${(output_image_type===output_type.LINE||input_image_type!==img_type_obj.PERSON_IMAGE)?'function-btn disable':'function-btn'}`}>
                     <FontAwesomeIcon icon={faFaceMehBlank}/>
                     <span>캐릭터 변환</span>
                 </button>

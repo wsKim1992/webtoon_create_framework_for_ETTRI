@@ -397,6 +397,7 @@ export const convertIntoBase64=(src,width,height)=>{
 }
 
 export const convertIntoFile = (bs64)=>{
+    console.log(bs64);
     const imageData = bs64.split(",")[1];
     const binaryObj = window.atob(imageData);
     const binaryArr = [];
@@ -432,6 +433,14 @@ export const img_type_obj={
     CARTOONIZED_IMAGE:'CARTOONIZED_IMAGE'
 }
 
+export const output_type={
+    LINE:'LINE',
+    NO_BACKGROUND:'NO_BACKGROUND',
+    CARTOONIZED:'CARTOONIZED',
+    COLORIZED:'COLORIZED',
+    FACIAL_EXPRESSION:'FACIAL_EXPRESSION'
+}
+
 const initialState = {
     input_image_src: null,
     input_image_src_type:null,
@@ -439,6 +448,7 @@ const initialState = {
     input_image_idx:-1,
     person_image_list: [],
     output_image_src: null,
+    output_image_type:null,
     cartoonize_image_list: [],
 }
 
@@ -456,7 +466,9 @@ const DrawLineReducer = (state, action) => {
                 input_image_src:src,
                 input_image_src_type:src_type,
                 input_image_type:img_type,
-                input_image_idx:prev_person_image_list.length+3
+                input_image_idx:prev_person_image_list.length+6,
+                output_image_type:null,
+                output_image_src:null
             };
         }
         case UPLOAD_CARTOONIZED_IMAGE: {
@@ -467,31 +479,45 @@ const DrawLineReducer = (state, action) => {
                 input_image_src:src,
                 input_image_src_type:src_type,
                 input_image_type:img_type,
-                input_image_idx:prev_cartoonize_image_list.length+3
+                input_image_idx:prev_cartoonize_image_list.length+3,
+                output_image_type:null,
+                output_image_src:null
             };
         }
         case CHANGE_INPUT_IMAGE: {
             const { input_image_src, input_image_src_type,input_image_type,input_image_idx } = action;
             console.log(input_image_type);
-            return { ...state, output_image_src: null,input_image_src,input_image_src_type, input_image_type,input_image_idx };
+            return { ...state,output_image_type:null, output_image_src: null,input_image_src,input_image_src_type, input_image_type,input_image_idx };
         }
         case CHANGE_OUTPUT_IMAGE: {
             const { cartoonize_image_list: prev_cartoonize_image_list } = state;
             const { output_image_src, output_image_type } = action;
+            
             switch (output_image_type) {
                 case api_result_type.REMOVE_BACKGROUND: {
-                    return { ...state, output_image_src };
+                    return {
+                         ...state, 
+                         output_image_src,
+                         output_image_type:output_type.NO_BACKGROUND,
+                         input_image_src_type:src_type_obj.DIR_PATH
+                    };
                 }
                 case api_result_type.CONVERT_INTO_LINE: {
-                    return { ...state, output_image_src };
+                    return { 
+                        ...state, 
+                        output_image_src,
+                        output_image_type:output_type.LINE ,
+                        input_image_src_type:src_type_obj.DIR_PATH
+                    };
                 }
                 case api_result_type.CHANGE_FACIAL_EXPRESSION: {
-                    return { ...state, output_image_src };
+                    return { ...state, output_image_src,output_image_type:output_type.FACIAL_EXPRESSION ,input_image_src_type:src_type_obj.DIR_PATH };
                 }
                 case api_result_type.CARTOONIZE: {
                     return {
                         ...state,
                         output_image_src,
+                        output_image_type:output_type.CARTOONIZED,
                         cartoonize_image_list: [
                             ...prev_cartoonize_image_list,
                             {
@@ -511,6 +537,7 @@ const DrawLineReducer = (state, action) => {
                     return {
                         ...state,
                         output_image_src,
+                        output_image_type:output_type.COLORIZED,
                         cartoonize_image_list: [
                             ...prev_cartoonize_image_list,
                             {

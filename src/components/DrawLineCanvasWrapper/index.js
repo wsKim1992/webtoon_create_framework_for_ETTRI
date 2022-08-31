@@ -6,7 +6,7 @@ import ImageWrapper from "./ImageWrapper";
 const EntireCanvasBox = styled.div`
     width:100%;height:100%;
     .image-container{
-        width:100%;height:calc(100% - 135px);
+        width:100%;height:calc(100% - 175px);
     }
     .function-btn-container{
         width:100%;
