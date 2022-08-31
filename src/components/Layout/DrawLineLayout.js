@@ -269,7 +269,7 @@ const EntireWrapper = styled.div`
             }
         }
         .show-image-container{
-            width:100%;height:calc(100% - 245px);
+            width:100%;height:calc(100% - 215px);
             .show-image-wrapper{
                 width: 100%;
                 height: 100%;
@@ -280,7 +280,7 @@ const EntireWrapper = styled.div`
                 .image-box{
                     width: 95%;
                     margin: 0 auto;
-                    height:calc(100% - 55.5px);
+                    height:100%;
                 }
             }
         }
@@ -530,7 +530,7 @@ const DrawLineReducer = (state, action) => {
                         input_image_src:output_image_src,
                         input_image_src_type:src_type_obj.DIR_PATH,
                         input_image_type:img_type_obj.CARTOONIZED_IMAGE,
-                        input_image_idx:prev_cartoonize_image_list.length+3,
+                        input_image_idx:prev_cartoonize_image_list.length+5,
                     };
                 }
                 case api_result_type.COLORIZE: {
@@ -549,7 +549,7 @@ const DrawLineReducer = (state, action) => {
                         input_image_src:output_image_src,
                         input_image_src_type:src_type_obj.DIR_PATH,
                         input_image_type:img_type_obj.CARTOONIZED_IMAGE,
-                        input_image_idx:prev_cartoonize_image_list.length+3,
+                        input_image_idx:prev_cartoonize_image_list.length+5,
                     };
                 }
             }

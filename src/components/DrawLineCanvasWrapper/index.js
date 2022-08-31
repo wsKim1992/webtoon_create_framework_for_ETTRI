@@ -23,7 +23,7 @@ const EntireCanvasBox = styled.div`
     }
     @media screen and (max-width:640px){
         .image-container{
-            width:100%;height:calc(100% - 100px);
+            width:100%;height:calc(100% - 65px);
         }
         .function-btn-container{
             width:100%;

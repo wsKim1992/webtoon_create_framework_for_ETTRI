@@ -189,7 +189,11 @@ const EntireContainer = styled.div`
                     }
                 }
                 .init-component{
+                    width: 35px;
+                    height: 35px;
                     .init-text-box{
+                        width: 100%;
+                        line-height: 35px;
                         font-size:19.5px;
                     }
                 }
