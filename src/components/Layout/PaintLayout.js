@@ -106,7 +106,98 @@ const PaintLayoutWrapper = styled.div`
             }
         }
     }
-    @media screen and (max-width:1220px){
+
+    @media screen and (max-width:1220px) and (orientation: landscape){
+        width:100%;height:100%;
+        .header-container{
+            width:100%;height:75.5px;
+            border-bottom:1px solid #454545;
+        }
+        .body-container{
+            width:100%; height:100%;
+            .body-wrapper{
+                width:100%;height:100%;
+                display:flex;
+                flex-direction:row;
+                .mobile-tool-bar-container{
+                    display:none;
+                }
+                .initial-canvas-container{
+                    background: rgba(255,255,255,0.60);
+                    overflow-y:scroll;
+                    -ms-overflow-style:none;
+                    scrollbar-width:none;
+                    &::-webkit-scrollbar{
+                        display:none;
+                    }
+                    width:calc(100% - 285.5px);
+                    height:100%;
+                    .initial-canvas-wrapper{
+                        width:100%;height:100%;
+                    }
+                }
+                .canvasWrapper-container{
+                    overflow-y:scroll;
+                    width:calc(100% - 441px);
+                    height:100%;
+                    .canvasWrapper-wrapper{
+                        width:100%;height:100%;
+                    }
+                }
+                .toolbar-container{
+                    width:285.5px;height:100%;
+                    background-color:#fff;
+                    overflow-y:scroll;
+                    -ms-overflow-style:none;
+                    scrollbar-width:none;
+                    &::-webkit-scrollbar{
+                        display:none;
+                    }
+                    .toolbar-wrapper{
+                        width:100%;height:100%;
+                    }
+                }
+                .history-container{
+                    width:155.5px;height:100%;
+                    background-color:#fff;
+                    .history-wrapper{
+                        width:100%;height:100%;
+                        overflow-y:scroll;
+                        padding:10px;
+                        box-sizing:border-box;
+                        -ms-overflow-style:none;
+                        scrollbar-width:none;
+                        &::-webkit-scrollbar{
+                            display:none;
+                        }
+                        >div{
+                            .history-record{
+                                width:135.5px;height:135.5px;
+                                margin-bottom:10px;
+                                border-radius:4.5px;
+                                box-sizing:border-box;
+                                border:1.5px solid rgba(45,45,45,0.65);
+                                cursor:pointer;
+                                img{
+                                    display:block;
+                                    height:100%;width:100%;
+                                    object-fit:contain;
+                                }
+                                &.on{
+                                    border:5.5px solid #669DFD;
+                                }
+                                &:hover{
+                                    border:5.5px solid #669DFD;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media screen and (max-width:1220px) and (orientation: portrait){
         .body-container{
             .body-wrapper{
                 width:100%;height:100%;
@@ -469,22 +560,42 @@ export const findElement = (element, findCondition, endCondition) => {
 }
 
 export const settingCanvasSize = () => {
-    const { innerWidth } = window;
-    if (1900 <= innerWidth && innerWidth < 2500) {
-        return { width: 850, height: 850 };
-    } else if (1250 <= innerWidth && innerWidth < 1900) {
-        return { width: 615, height: 615 };
-    } else if (1025 <= innerWidth && innerWidth < 1250) {
-        return { width: 682, height: 682 };
-    } else if(655<=innerWidth && innerWidth<1025){
-        return {width:682,height:682}
-    } else if(535<=innerWidth && innerWidth<655){
-        return {width:582,height:582}
-    }else if(335<=innerWidth && innerWidth<435){
-        return {width:385,height:385}
-    }else {
-        return { width: 315, height: 315 };
+    const { innerWidth,innerHeight } = window;
+    const isLandScape = innerWidth>innerHeight;
+    if(isLandScape){
+        if (1900 <= innerWidth && innerWidth < 2500) {
+            return { width: 850, height: 850 };
+        } else if (1450 <= innerWidth && innerWidth < 1900) {
+            return { width: 615, height: 615 };
+        } else if (1025 <= innerWidth && innerWidth < 1450) {
+            return { width: 552, height: 552 };
+        } else if(655<=innerWidth && innerWidth<1025){
+            return {width:482,height:482}
+        } else if(535<=innerWidth && innerWidth<655){
+            return {width:402,height:402}
+        }else if(335<=innerWidth && innerWidth<435){
+            return {width:385,height:385}
+        }else {
+            return { width: 315, height: 315 };
+        }
+    }else{
+        if (1900 <= innerWidth && innerWidth < 2500) {
+            return { width: 850, height: 850 };
+        } else if (1250 <= innerWidth && innerWidth < 1900) {
+            return { width: 615, height: 615 };
+        } else if (1025 <= innerWidth && innerWidth < 1250) {
+            return { width: 682, height: 682 };
+        } else if(655<=innerWidth && innerWidth<1025){
+            return {width:682,height:682}
+        } else if(535<=innerWidth && innerWidth<655){
+            return {width:582,height:582}
+        }else if(335<=innerWidth && innerWidth<435){
+            return {width:385,height:385}
+        }else {
+            return { width: 315, height: 315 };
+        }
     }
+    
 }
 
 export const adjustCanvas = (canvas,src)=>{
