@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "cross-env PUBLIC_URL='./' node scripts/build.js",
-    "start": "HOST='1.201.8.82' PORT=9992 node scripts/start.js",
+    "start": "HOST=1.201.8.82 PORT=9992 HTTP=http node scripts/start.js",
     "test": "node scripts/test.js"
   },
   "browserslist": [

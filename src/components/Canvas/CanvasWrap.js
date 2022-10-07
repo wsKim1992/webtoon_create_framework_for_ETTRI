@@ -91,7 +91,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                 alert("부적절한 사용자 입니다!");
                 return false;
             }
-            //jwt 토큰 유효기간 지나면 재발급받은 후 localStorage 재설정.
+            
             if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token);
             return true;
         }catch(err){
@@ -127,7 +127,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
         try{
 
             //jwt 토큰 유효성 검사 
-            const confirmTokenRespHeader = {headers:{
+            /* const confirmTokenRespHeader = {headers:{
                 'Authorization':localStorage.getItem('token'),
                 'content-type':'application/json'}
             };
@@ -136,9 +136,9 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
             if(!success){
                 alert("부적절한 사용자 입니다!");
                 return false;
-            }
+            } */
             //jwt 토큰 유효기간 지나면 재발급받은 후 localStorage 재설정.
-            if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token);
+            /* if(confirmTokenResp.data?.token)localStorage.setItem('token',confirmTokenResp.data.token); */
             
             //이미지 data 를 api 서버로 전송
             let decodeImgData = '';
@@ -412,15 +412,19 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
 
 
     const ConvertToColorLayer=async (e)=>{
+        if(convertToWebToon){
+            alert("어쩔꼰대 스타일로 변환 모드를 해제해 주세요");
+            return false;
+        }
         if(!inputForColorLayer||inputForColorLayer.length===0){
             alert('이미지를 팬선으로 변환을 해주세요!');
             return false;
         }
         e.preventDefault();
 
-        const tokenConfirmed=await confirmAPIToken();
+       /*  const tokenConfirmed=await confirmAPIToken();
         console.log(tokenConfirmed);
-        if(!tokenConfirmed){return false;}
+        if(!tokenConfirmed){return false;} */
 
         const backgroundChecked = document.querySelector('input[name="withOutBackground"]').checked;
  
@@ -546,7 +550,7 @@ const CanvasWrap = memo(({canvasWrapWidth,canvasWrapHeight})=>{
                                         <span>
                                             <Input onChange={onClickWebToonStyle} style={{margin:'-10px 10px'}} type="checkbox" name="to_webtoon_style" value='/request_convert_to_webtoon_style' id="to_webtoon_style"/>
                                         </span>
-                                        <Label className="listGroupItem" htmlFor="to_webtoon_style">어쩔꼰대 스타일로 변환</Label>
+                                        <Label className="listGroupItem" htmlFor="to_webtoon_style">A 스타일로 변환</Label>
                                     </p>
                                 </ListGroupItem>
                                 <ListGroupItem>

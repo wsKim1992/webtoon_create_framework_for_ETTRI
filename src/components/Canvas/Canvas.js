@@ -82,6 +82,7 @@ const Canvas = memo(({index,canvasWidth})=>{
 
     useEffect(()=>{
         if(index===1&&isSample){
+            console.log(sampleImgOffset);
             let tempImg = new Image();  
             tempImg.src = sampleImgList[sampleImgOffset];
             tempImg.onload = ()=>{
@@ -472,7 +473,7 @@ const Canvas = memo(({index,canvasWidth})=>{
                 onMouseDown={canvasFunctionList[pen.mode].mouseDown}
                 onMouseUp={canvasFunctionList[pen.mode].mouseUp}
                 onMouseMove={canvasFunctionList[pen.mode].mouseMove}
-                ref={canvasRef} className={s.canvas}/>
+                ref={canvasRef} />
                 {
                     index===2&&
                     (
