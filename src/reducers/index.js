@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux';
-import auth from './auth';
-import navigation from './navigation';
-import alerts from './alerts';
-import register from './register';
+import callAPIReducer from './callAPIReducer';
+import callAPIInDrawLineReducer from './callAPIInDrawLinePage';
+import MediaReducer from './MediaReducer';
+import callAPIPaintReducer from './callAPIInPaintReducer';
 
 export default combineReducers({
-  alerts,
-  auth,
-  navigation,
-  register,
+  callAPIReducer,
+  MediaReducer,
+  callAPIInDrawLineReducer,
+  callAPIPaintReducer
 });

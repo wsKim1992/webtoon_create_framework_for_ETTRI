@@ -55,9 +55,9 @@ const Sidebar = memo(({sidebarWidth})=> {
     const value = useMemo(()=>({dispatch:IconListDispatch}),[]);
     return (
         <nav className={s.root}>
-            <header className={s.logo}>
+            {/* <header className={s.logo}>
                 <span className="fw-bold"></span>
-            </header>
+            </header> */}
             <ListManagerContext.Provider value={value}>
                 <ul className={s.nav}>
                     {

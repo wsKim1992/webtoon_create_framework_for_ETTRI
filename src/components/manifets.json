@@ -1,0 +1,7 @@
+{
+    "short_name": "AI ART Service Of NESTYLE",
+    "name": "AI ART Service Of NESTYLE",
+    "start_url": "/paint",
+    "display": "standalone",
+    "orientation": "landscape"
+}

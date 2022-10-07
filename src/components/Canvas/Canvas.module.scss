@@ -37,167 +37,245 @@
         }
     }
 }
-
-.canvasWrap{
-    position:relative;
-    margin-left:50px;
-    width:85.4%;
-    height:auto;
+.EntireContainer{
     display:flex;
-    flex-direction:row;
-    justify-content: space-evenly;
-    align-items: center;
-    
-    .callApiBtnWrap{
-        width:100px;
-        height:100%;
-        display:flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        button{
-            background-color: #0f0544;
-            color:#fff;
-            display: block;
-            width:100px;
-            height:100px;
-            border:none;
-            border-radius: 20px;
-        }
-        button:hover{
-            background-color: #020202;
-            color: aliceblue;
-        }
-    }
-    
-    div{
-        max-width: 720px;
-        height:auto;
+    justify-content: center;
+    .canvasWrap{
         position:relative;
-        #loadImage{
-            position:absolute;
-            width:0px;
-            height:0px;
-            opacity:0%;
-        }
-
-        .btnListWrap{
-            width:100%;
-            height:30px;
-            display: flex;
+        width:auto;
+        height:auto;
+        display:flex;
+        flex-direction:row;
+        justify-content: space-evenly;
+        align-items: center;
+        
+        .callApiBtnWrap{
+            width:100px;
+            height:100%;
+            display:flex;
             flex-direction: row;
-            justify-content: space-around;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 2.5px;
-            
-            .historyBtnListWrap{
-                height:85%;
-                width:15%;
-                display:flex;
+            button{
+                background-color: #0f0544;
+                color:#fff;
+                display: block;
+                width:100px;
+                height:100px;
+                border:none;
+                border-radius: 20px;
+            }
+            button:hover{
+                background-color: #020202;
+                color: aliceblue;
+            }
+        }
+        
+        .entireCavasWrap{
+            width:512px;
+            height:auto;
+            position:relative;
+            #loadImage{
+                position:absolute;
+                width:0px;
+                height:0px;
+                opacity:0%;
+            }
+
+            .btnListWrap{
+                width:100%;
+                height:45.5px;
+                display: flex;
                 flex-direction: row;
-                justify-content: space-evenly;
+                justify-content: space-between;
                 align-items: center;
-                .historyBtnWrap{
-                    width:34.7%;
-                    height:100%;
-                    border-radius: 9.5px;
-                    text-align: center;
-                    display: flex;
+                margin-bottom: 2.5px;
+                .singleButton{
+                    display:none;
+                    @media screen and (max-width:947px){
+                        width:40.5px;
+                        height:40.5px;
+                        border-radius: 9.5px;
+                        text-align: center;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: center;
+                        align-items: center;
+                        button{
+                            font-size: 12px;
+                            width:100%;height:100%;
+                            background-color: #0f0544;
+                            border: none;
+                        }
+                        button:hover{
+                            background-color: #020202;
+                            color: aliceblue;
+                        }
+                    }
+                }
+                .historyBtnListWrap{
+                    height:85%;
+                    width:150px;
+                    display:flex;
                     flex-direction: row;
-                    justify-content: center;
+                    justify-content: space-evenly;
                     align-items: center;
+                    .historyBtnWrap{
+                        width:40.5px;
+                        height:40.5px;
+                        border-radius: 9.5px;
+                        text-align: center;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: center;
+                        align-items: center;
+                        button{
+                            font-size: 12px;
+                            width:100%;height:100%;
+                            background-color: #0f0544;
+                            border: none;
+                        }
+                        button:hover{
+                            background-color: #020202;
+                            color: aliceblue;
+                        }
+                    }
+                }
+                .inputLabelBtnWrap{
+                    height:85.5%;
+                    width:22.5%;
                     button{
                         font-size: 10.5px;
-                        width:30px;height:30px;
+                        width:100%;
+                        height:100%;
                         background-color: #0f0544;
                         border: none;
+                        label{
+                            display:flex;
+                            flex-direction: row;
+                            justify-content: space-evenly;
+                            align-items: center;
+                            width:100%;
+                            height:100%;
+                            text-align: center;
+                            font-size:25.5%;
+                        }
                     }
                     button:hover{
                         background-color: #020202;
                         color: aliceblue;
                     }
-                }
-            }
-            .inputLabelBtnWrap{
-                height:85.5%;
-                width:22.5%;
-                button{
-                    font-size: 10.5px;
-                    width:100%;
-                    height:100%;
-                    background-color: #0f0544;
-                    border: none;
-                    label{
-                        display:flex;
-                        flex-direction: row;
-                        justify-content: space-evenly;
-                        align-items: center;
-                        width:100%;
-                        height:100%;
-                        text-align: center;
-                        font-size:25.5%;
+                    button:active{
+                        background-color: #020202;
+                        color: aliceblue;
+                        border:none;
                     }
                 }
-                button:hover{
-                    background-color: #020202;
-                    color: aliceblue;
+            }
+            .mainContentsWrap{
+                position:relative;
+                .canvas{
+                    position:relative;
+                    background-color: #fff;
+                }
+                .video{
+                    position:absolute;
+                    top:0;left:0;
+                    z-index:10;
+                    object-fit: cover;
                 }
             }
+            
         }
-        .canvas{
-            position:relative;
-            border:1px solid #000;
-            width:100%;
-            height:720px;
-            background-color: #fff;
-        }
-    }
-    .canvasOptionWrap{
-        position:absolute;
-        top:35px;right:-10%;
-        width:10%;
-        height:auto;
-        border-radius: 10px;
-        background-color: #0f0544;
-        font-size: 11.5px;
-        
-        .canvasOption{
-            text-align: left;
-            width:100%;
+        .canvasOptionWrap{
+            position:absolute;
+            top:48px;left:105.5%;
+            width:170.5px;
             height:auto;
-            .optionListWrap{
-                li{
-                    p{
-                        display:flex;
-                        flex-direction: row;
-                        justify-content:left;
-                        align-items: center;
-                        width:100%;height:100%;
-                        margin:0;
-                        input[type=radio]{display:none;}
-                        .chooseObjectOrHuman{
-                            display:block;
-                            height:18.5px;width:100%;   
-                            label{
+            border-radius: 4.5px;
+            background-color: #0f0544;
+            font-size: 12px;
+            @media screen and (max-width:947px){
+                left:calc(100% - 165.5px);
+            }
+            .canvasOption{
+                text-align: left;
+                width:100%;
+                height:auto;
+                .optionListWrap{
+                    li{
+                        p{
+                            display:flex;
+                            flex-direction: row;
+                            justify-content:left;
+                            align-items: center;
+                            width:100%;height:100%;
+                            margin:0;
+                            input[type=radio]{display:none;}
+                            .chooseObjectOrHuman{
+                                display:block;
+                                height:18.5px;width:100%;   
+                                label{
+                                    display:inline-block;
+                                    height:100%;width:49%;
+                                    border-radius: 5.5px;
+                                    padding:0;
+                                    text-align: center;
+                                    font-size: 8.6px;
+                                    background-color: #0f0544;
+                                    border: 0;margin:0;
+                                }
+                            }
+                            span{
                                 display:inline-block;
-                                height:100%;width:49%;
+                                width: 11.5px;height:11.5px;
+                            }
+                            label{margin: 0 0 0 6.4%;}
+                        }
+                    }
+                    
+                }
+                .changePenLineWrap{
+                    li{
+                        padding:0;
+                        width:100%;
+                        background-color:#0f0550;
+                        input[type=radio]{display:none;}
+                        label{
+                            padding:3.5px 3.5px 3.5px 3.5px; 
+                            display:block;
+                            width:75%;height:100%;
+                            
+                            margin-left:25%;
+                        }
+                        p{
+                            display:flex;
+                            flex-direction: row;
+                            justify-content:left;
+                            align-items: center;
+                            width:100%;height:100%;
+                            margin:0;
+                            button{
+                                margin: 0 auto;
+                                border: none;
                                 border-radius: 5.5px;
-                                padding:0;
-                                text-align: center;
-                                font-size: 8.6px;
+                                margin-bottom: 7.5px;
+                                display: block;
+                                height: 35px;
+                                line-height:35px;
+                                font-size:12px;
+                                color: #fff;
                                 background-color: #0f0544;
-                                border: 0;margin:0;
+                            }
+                            button:hover{
+                                background-color: rgb(3,144,252);
                             }
                         }
-                        span{
-                            display:inline-block;
-                            width: 11.5px;height:11.5px;
-                        }
-                        label{margin: 0 0 0 6.4%;}
                     }
                 }
-                
+                    
             }
+<<<<<<< HEAD
             .changePenLineWrap{
                 li{
                     padding:0;
@@ -222,9 +300,10 @@
                 }
             }
                 
+=======
+>>>>>>> 59052bf7d4488ecf442a3ad8bcdd7f66cb23dc65
         }
     }
 }
-
 
 
