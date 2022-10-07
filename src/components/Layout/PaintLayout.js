@@ -48,6 +48,7 @@ const PaintLayoutWrapper = styled.div`
                 }
             }
             .canvasWrapper-container{
+                overflow-y:scroll;
                 width:calc(100% - 441px);
                 height:100%;
                 .canvasWrapper-wrapper{
@@ -105,7 +106,7 @@ const PaintLayoutWrapper = styled.div`
             }
         }
     }
-    @media screen and (max-width:1330px){
+    @media screen and (max-width:1220px){
         .body-container{
             .body-wrapper{
                 width:100%;height:100%;
@@ -187,6 +188,7 @@ export const INIT_CANVAS = 'INIT_CANVAS';
 export const UPDATE_PAINT_AXIS = 'UPDATE_PAINT_AXIS';
 export const PAINT_COLOR = 'PAINT_COLOR';
 export const CHANGE_MODE = 'CHANGE_MODE';
+export const CHANGE_API_MODE ='CHANGE_API_MODE';
 export const DELETE_PAINT_AXIS = 'DELETE_PAINT_AXIOS';
 export const CHANGE_HISTORY = 'CHANGE_HISTORY';
 export const CHANGE_STROKE_STYLE = 'CHANGE_STROKE_STYLE';
@@ -204,7 +206,7 @@ const initialState = {
         src: null,
         mode: canvasMode.BRUSH,
         strokeStyle: '#669DFD',
-        lineWidth: 1.5,
+        lineWidth: 2.5,
     },
     history: {
         history_record_array: [],
@@ -217,6 +219,7 @@ const initialState = {
     call_api: false,
     delete_call_api:false,
     delete_paint_axis_arr:[],
+    api_mode:2
 };
 
 export const PaintStateContext = createContext({ ...initialState, PaintStateDispatch: () => { } });
@@ -235,6 +238,10 @@ const PaintStateReducer = (state, action) => {
             const { pen } = state;
             const newPen = { ...pen, mode };
             return { ...state, pen: newPen };
+        }
+        case CHANGE_API_MODE:{
+            const {api_mode} = action;
+            return {...state,api_mode};
         }
         case DRAW_BACKGROUND: {
             const { bs64 } = action;
@@ -309,13 +316,10 @@ const PaintStateReducer = (state, action) => {
                         ...prevPaintAxisArr.filter(v => v.timeStamp <= timeStamp),
                         prevPaintAxisArr[prevPaintAxisArr.length - 1]
                     ];
-                    console.log(newPaintAxisArr);
                 } else {
                     newHistoryArr = [...prevHistory.history_record_array, { bs64, timeStamp }];
                     newPaintAxisArr = [...prevPaintAxisArr];
                 }
-                console.log(timeStamp);
-                console.log(newPaintAxisArr);
                 return {
                     ...state,
                     pen: {
@@ -357,16 +361,23 @@ const PaintStateReducer = (state, action) => {
 
         }
         case CHANGE_HISTORY: {
-            const { history: prevHistory, pen: prevPen } = state;
-            if (!prevPen.src) return { ...state };
-            const { history_record_array } = prevHistory;
-            const { offset: newOffset } = action;
-            if (newOffset > history_record_array.length - 1) { return { ...state } };
-            return {
-                ...state,
-                history: { ...prevHistory, history_offset: newOffset },
-                pen: { ...prevPen, src: prevHistory.history_record_array[newOffset].bs64 }
-            };
+            try{
+                const { history: prevHistory, pen: prevPen } = state;
+                if (!prevPen.src) return { ...state };
+                const { history_record_array } = prevHistory;
+                const { offset: newOffset } = action;
+                if (newOffset > history_record_array.length - 1) { return { ...state } };
+                return {
+                    ...state,
+                    history: { ...prevHistory, history_offset: newOffset },
+                    pen: { ...prevPen, src: prevHistory.history_record_array[newOffset].bs64 }
+                };
+            }catch(err){
+                return{
+                    ...state
+                }
+            }
+            
         }
         case STEP_BACK: {
             const { paint_axis_arr: prev_paint_axis_arr } = state;
@@ -407,9 +418,6 @@ const drawImageAsync = (src, canvasRef) => {
 export const drawPointsOnCanvas = async (canvas, bs64, paint_axis_arr, history) => {
     await drawImageAsync(bs64, canvas);
     const { timeStamp } = history.history_record_array[history.history_offset];
-    console.log(history.history_offset);
-    console.log(history.history_record_array);
-    console.log(paint_axis_arr)
     const new_paint_axis = paint_axis_arr.filter(v => v.timeStamp <= timeStamp);
     const originalCanvasStrokeStyle = canvas.getContext('2d').strokeStyle;
     if (new_paint_axis.length > 0) {
@@ -467,13 +475,26 @@ export const settingCanvasSize = () => {
     } else if (1250 <= innerWidth && innerWidth < 1900) {
         return { width: 615, height: 615 };
     } else if (1025 <= innerWidth && innerWidth < 1250) {
-        return { width: 512, height: 512 };
-    } else if(555<=innerWidth && innerWidth<1025){
-        return {width:412,height:412}
-    } else if(435<=innerWidth && innerWidth<555){
+        return { width: 682, height: 682 };
+    } else if(655<=innerWidth && innerWidth<1025){
+        return {width:682,height:682}
+    } else if(535<=innerWidth && innerWidth<655){
+        return {width:582,height:582}
+    }else if(335<=innerWidth && innerWidth<435){
         return {width:385,height:385}
     }else {
         return { width: 315, height: 315 };
+    }
+}
+
+export const adjustCanvas = (canvas,src)=>{
+    const {width:canvasWidth,height:canvasHeight} = settingCanvasSize();
+    const img = new Image();
+    img.src = src;
+    img.onload = ()=>{
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
     }
 }
 
@@ -543,7 +564,7 @@ const PaintLayout = memo(() => {
                     dispatch({ type: INIT_CALL_PAINT_API });
                     return false;
                 }).catch(err => {
-                    console.log(err);
+                    console.error(err);
                     dispatch({ type: INIT_CALL_PAINT_API });
                     PaintStateDispatch({ type: STEP_BACK });
                     return false;
@@ -583,7 +604,7 @@ const PaintLayout = memo(() => {
     ])
 
     useEffect(() => {
-        const { call_api, paint_axis_arr, initialSrc } = PaintState;
+        const { call_api, paint_axis_arr, initialSrc,api_mode } = PaintState;
         if (call_api) {
             if (paint_axis_arr.length > 0) {
                 const { timeStamp } = paint_axis_arr[paint_axis_arr.length - 1];
@@ -592,14 +613,14 @@ const PaintLayout = memo(() => {
                 let formData = new FormData();
                 formData.append('input_image', file);
                 formData.append('hint_list', JSON.stringify(axisArr));
-                dispatch({ type: LOADING_CALL_PAINT_API, data: formData });
+                dispatch({ type: LOADING_CALL_PAINT_API, data: formData ,api_mode});
                 /* console.log(PaintState.history.history_record_array);
                 console.log(PaintState.paint_axis_arr); */
             } 
         }
     }, [
         PaintState.call_api,PaintState.paint_axis_arr,
-        PaintState.initialSrc,
+        PaintState.initialSrc,PaintState.api_mode
     ]);
 
     return (
@@ -637,6 +658,7 @@ const PaintLayout = memo(() => {
                                     </>
                                 )
                             }
+                            
                             <div className="history-container">
                                 <div className="history-wrapper">
                                     <PaintHistory />

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import 'antd/dist/antd.css';
 import { ChromePicker } from "react-color";
 import {CHANGE_COLOR,PaintStateContext,findElement} from '../Layout/PaintLayout';
-
+import { useSelector } from "react-redux";
 const PalleteBarComponent = styled.div`
     width:100%;height:100%;
     .pallete-component-container{
@@ -52,6 +52,7 @@ const PalleteBar = memo(()=>{
         b: "19",
         a: "1",
     });
+    const {loadingCallAPI} = useSelector(state=>state.callAPIPaintReducer)
 
     useEffect(()=>{
         setSketchPickerColor(pen.strokeStyle);
@@ -62,6 +63,8 @@ const PalleteBar = memo(()=>{
     },[]);
 
     const onClickPallate = useCallback((evt)=>{
+        console.log(`loadingCallAPI :${loadingCallAPI}`);
+        if(loadingCallAPI)return false;
         const {target} = evt;
         const endCondition = 'pallete-component-wrapper';
         const findCondition = 'color';
@@ -70,7 +73,7 @@ const PalleteBar = memo(()=>{
             const {color:strokeStyle} = element.dataset;
             PaintStateDispatch({type:CHANGE_COLOR,strokeStyle});
         }
-    })
+    },[loadingCallAPI])
 
     return (
         <PalleteBarComponent>
@@ -85,7 +88,7 @@ const PalleteBar = memo(()=>{
 
                     <p data-color={'#CDCDCD'} className={`${sketchPickerColor==='#CDCDCD'?'color on':'color'}`} style={{backgroundColor:'#CDCDCD'}}></p>
                     <p data-color={'#EED7DF'} className={`${sketchPickerColor==='#EED7DF'?'color on':'color'}`} style={{backgroundColor:'#EED7DF'}}></p>
-                    <p data-color={'#FFFFFF'} className={`${sketchPickerColor==='#FFFFFF'?'color on':'color'}`} style={{backgroundColor:'#FFFFFF'}}></p>
+                    <p data-color={'#FFFFFF'} className={`${sketchPickerColor==='#FFFFFF'?'color on':'color'}`} style={{backgroundColor:'#FFFFFF',border:'0.5px solid #000'}}></p>
                     <p data-color={'#B90B0E'} className={`${sketchPickerColor==='#B90B0E'?'color on':'color'}`} style={{backgroundColor:'#B90B0E'}}></p>
                     <p data-color={'#EA402F'} className={`${sketchPickerColor==='#EA402F'?'color on':'color'}`} style={{backgroundColor:'#EA402F'}}></p>
 
@@ -105,6 +108,11 @@ const PalleteBar = memo(()=>{
                     <p data-color={'#7A63A4'} className={`${sketchPickerColor==='#7A63A4'?'color on':'color'}`}  style={{backgroundColor:'#7A63A4'}}></p>
                     <p data-color={'#FFB3C5'} className={`${sketchPickerColor==='#FFB3C5'?'color on':'color'}`}  style={{backgroundColor:'#FFB3C5'}}></p>
                     <p data-color={'#FBCFB1'} className={`${sketchPickerColor==='#FBCFB1'?'color on':'color'}`}  style={{backgroundColor:'#FBCFB1'}}></p>
+
+                    <p data-color={'#34F43D'} className={`${sketchPickerColor==='#34F43D'?'color on':'color'}`}  style={{backgroundColor:'#34F43D'}}></p>
+                    <p data-color={'#8BFFFB'} className={`${sketchPickerColor==='#8BFFFB'?'color on':'color'}`}  style={{backgroundColor:'#8BFFFB'}}></p>
+                    <p data-color={'#FFF67C'} className={`${sketchPickerColor==='#FFF67C'?'color on':'color'}`}  style={{backgroundColor:'#FFF67C'}}></p>
+                    <p data-color={'#FFAA00'} className={`${sketchPickerColor==='#FFAA00'?'color on':'color'}`}  style={{backgroundColor:'#FFAA00'}}></p>
                 </div>
             </div>
             <h2 className="color-picker-title">색상 선택</h2>

@@ -1,16 +1,16 @@
-import React,{useCallback, useContext, useEffect, useState} from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaintBrush ,faPalette ,faEraser  } from "@fortawesome/free-solid-svg-icons";
-import { faFaceMehBlank,faFaceSurprise, faFaceMeh, faFaceGrin , faFaceAngry, faFaceSadCry } from '@fortawesome/free-regular-svg-icons';
+import { faPaintBrush, faPalette, faEraser } from "@fortawesome/free-solid-svg-icons";
+import { faFaceMehBlank, faFaceSurprise, faFaceMeh, faFaceGrin, faFaceAngry, faFaceSadCry } from '@fortawesome/free-regular-svg-icons';
 import { useDispatch } from "react-redux";
 import {
-    convertIntoBase64,convertIntoFile,
-    api_result_type,src_type_obj,DrawLineContext,findElement
+    convertIntoBase64, convertIntoFile,
+    api_result_type, src_type_obj, DrawLineContext, findElement
 } from "../Layout/DrawLineLayout";
-import {CanvasSizeContext} from '../DrawLineCanvasWrapper';
-import {LOADING_CALL_DRAWLINE_API} from '../../reducers/callAPIInDrawLinePage'
-import {img_type_obj,output_type} from '../Layout/DrawLineLayout';
+import { CanvasSizeContext } from '../DrawLineCanvasWrapper';
+import { LOADING_CALL_DRAWLINE_API } from '../../reducers/callAPIInDrawLinePage'
+import { img_type_obj, output_type } from '../Layout/DrawLineLayout';
 /* import { faCamera } from '@fortawesome/free-solid-svg-icons'; */
 const EntireContainer = styled.div`
     width:100%;height:100%;
@@ -80,6 +80,11 @@ const EntireContainer = styled.div`
             }
         }
     }
+    @media screen and (max-height:965px){
+        .expression-button-list{
+            top: -120%;
+        }
+    }
     @media screen and (max-width:1270px){
         .box{
             .function-btn{
@@ -118,6 +123,7 @@ const EntireContainer = styled.div`
     @media screen and (max-width:640px){
         .box{
             .function-btn{
+                padding:5.5px;
                 font-size:var(--tablet-canvas-function-button);
             }
         }
@@ -128,11 +134,21 @@ const EntireContainer = styled.div`
             }
         }
     }
+
+    @media screen and (max-height:450px) and (orientation:landscape){
+        .box{
+            width:10.5%;
+            .function-btn{
+                padding:5.5px;
+                font-size:10.5px;
+            }
+        }
+    }
 `;
 
-const FunctionBtnWrapper = ()=>{
-    const [showExpressionList,setShowExpressionList]=useState(false);
-    const {width,height}=useContext(CanvasSizeContext);
+const FunctionBtnWrapper = () => {
+    const [showExpressionList, setShowExpressionList] = useState(false);
+    const { width, height } = useContext(CanvasSizeContext);
     const {
         input_image_src,
         input_image_src_type,
@@ -142,112 +158,122 @@ const FunctionBtnWrapper = ()=>{
     } = useContext(DrawLineContext);
     const dispatch = useDispatch();
     const functionName = {
-        [api_result_type.REMOVE_BACKGROUND]:'image2pen',
-        [api_result_type.CONVERT_INTO_LINE]:'image2pen',
-        [api_result_type.COLORIZE]:'image2pen'
+        [api_result_type.REMOVE_BACKGROUND]: 'image2pen',
+        [api_result_type.CONVERT_INTO_LINE]: 'image2pen',
+        [api_result_type.COLORIZE]: 'image2pen'
     }
-    
-    useEffect(()=>{
-        if(input_image_type===img_type_obj.PERSON_IMAGE){
+
+    useEffect(() => {
+        if (input_image_type === img_type_obj.PERSON_IMAGE) {
+            setShowExpressionList(false);
+        } else if (!input_image_src) {
             setShowExpressionList(false);
         }
-    },[input_image_type])
+    }, [input_image_type, input_image_src])
 
-    const onClickContainer = useCallback(async(evt)=>{
-        if(!input_image_src){
-            if(!output_image_src)return false;
+    const onClickContainer = useCallback(async (evt) => {
+        if (!input_image_src) {
+            if (!output_image_src) return false;
         }
-        const input_src = output_image_src?output_image_src:input_image_src;
-        const {target:thisElement} = evt;
+        const input_src = output_image_src ? output_image_src : input_image_src;
+        const { target: thisElement } = evt;
         const findCondition = 'box';
         const endCondition = 'function-btn-list-container';
-        const element = findElement(thisElement,findCondition,endCondition);
-        if(element){
-            const {api_type}=element.dataset;
-            let bs64 = input_src;
-            console.log(input_image_src_type);
-            if(input_image_src_type===src_type_obj.DIR_PATH){
-                bs64 = await convertIntoBase64(input_src,width,height);
-            }
-            const file = convertIntoFile(bs64);
-            if(functionName.hasOwnProperty(api_type)){
-                const formData = new FormData();
-                formData.append('input_image',file);
-                formData.append('function',functionName[api_type]);
-                dispatch({type:LOADING_CALL_DRAWLINE_API,api_type,data:formData});
-            }else if(api_type===api_result_type.CHANGE_FACIAL_EXPRESSION){
-                setShowExpressionList(prev=>!prev);
-                return false;
-            }else{
-                const formData = new FormData();
-                formData.append('input_image',file);
-                dispatch({type:LOADING_CALL_DRAWLINE_API,api_type,data:formData});
+        const element = findElement(thisElement, findCondition, endCondition);
+        if (element) {
+            const { api_type } = element.dataset;
+            console.log(input_image_type);
+            if (input_image_type === img_type_obj.CARTOONIZED_IMAGE) {
+                if (api_type === api_result_type.CHANGE_FACIAL_EXPRESSION) {
+                    setShowExpressionList(prev => !prev);
+                    return false;
+                }
+            } else {
+                if(api_type===api_result_type.CHANGE_FACIAL_EXPRESSION){
+                    return false;
+                }
+                let bs64 = input_src;
+                if (input_image_src_type === src_type_obj.DIR_PATH) {
+                    bs64 = await convertIntoBase64(input_src, width, height);
+                }
+                const file = convertIntoFile(bs64);
+                if (functionName.hasOwnProperty(api_type)) {
+                    const formData = new FormData();
+                    formData.append('input_image', file);
+                    formData.append('function', functionName[api_type]);
+                    dispatch({ type: LOADING_CALL_DRAWLINE_API, api_type, data: formData });
+                } else if(api_type===api_result_type.CARTOONIZE){
+                    const formData = new FormData();
+                    formData.append('input_image', file);
+                    dispatch({ type: LOADING_CALL_DRAWLINE_API, api_type, data: formData });
+                }
             }
         }
-    },[
+    }, [
         input_image_src,
         input_image_src_type,
-        width,height,
+        input_image_type,
+        width, height,
         output_image_src,
     ])
 
-    const onClickExpressionList = useCallback(async(evt)=>{
-        if(!input_image_src){
+    const onClickExpressionList = useCallback(async (evt) => {
+        if (!input_image_src) {
             return false;
         }
-        const {target:thisElement} = evt;
+        const { target: thisElement } = evt;
         const findCondition = 'expression-button';
         const endCondition = 'expression-button-list';
-        const element = findElement(thisElement,findCondition,endCondition);
-        if(element){
-            const {expression}=element.dataset;
+        const element = findElement(thisElement, findCondition, endCondition);
+        if (element) {
+            const { expression } = element.dataset;
             let bs64 = input_image_src;
-            if(input_image_src_type===src_type_obj.DIR_PATH){
-                bs64 = await convertIntoBase64(input_image_src,width,height);
+            if (input_image_src_type === src_type_obj.DIR_PATH) {
+                bs64 = await convertIntoBase64(input_image_src, width, height);
             }
             const file = convertIntoFile(bs64);
             const formData = new FormData();
-            formData.append('input_image',file);
-            formData.append('expression_name',expression);
-            dispatch({type:LOADING_CALL_DRAWLINE_API,data:formData,api_type:api_result_type.CHANGE_FACIAL_EXPRESSION})
+            formData.append('input_image', file);
+            formData.append('expression_name', expression);
+            dispatch({ type: LOADING_CALL_DRAWLINE_API, data: formData, api_type: api_result_type.CHANGE_FACIAL_EXPRESSION })
         }
-    },[
+    }, [
         input_image_src,
         input_image_src_type,
-        width,height,
+        width, height,
         output_image_src
     ])
 
     return (
         <EntireContainer onClick={onClickContainer} className="function-btn-list-container">
             {
-                showExpressionList&&
+                (showExpressionList) &&
                 (<div onClick={onClickExpressionList} className="expression-button-list">
                     <button data-expression='Surprise' className="expression-button">
-                        <FontAwesomeIcon icon={faFaceSurprise}/>
+                        <FontAwesomeIcon icon={faFaceSurprise} />
                         <span>Surprise</span>
                     </button>
                     <button data-expression='Neutral' className="expression-button">
-                        <FontAwesomeIcon icon={faFaceMeh}/>
+                        <FontAwesomeIcon icon={faFaceMeh} />
                         <span>Neutral</span>
                     </button>
                     <button data-expression='Angry' className="expression-button">
-                        <FontAwesomeIcon icon={faFaceAngry}/>
+                        <FontAwesomeIcon icon={faFaceAngry} />
                         <span>Angry</span>
                     </button>
                     <button data-expression='Sad' className="expression-button">
-                        <FontAwesomeIcon icon={faFaceSadCry}/>
+                        <FontAwesomeIcon icon={faFaceSadCry} />
                         <span>Sad</span>
                     </button>
                     <button data-expression='Happy' className="expression-button">
-                        <FontAwesomeIcon icon={faFaceGrin}/>
+                        <FontAwesomeIcon icon={faFaceGrin} />
                         <span>Happy</span>
                     </button>
                 </div>)
             }
-            <div data-api_type={api_result_type.REMOVE_BACKGROUND}  className="box">
-                <button disabled={input_image_type!==img_type_obj.PERSON_IMAGE} className={`${input_image_type!==img_type_obj.PERSON_IMAGE?'function-btn disable':'function-btn'}`}>
-                    <FontAwesomeIcon icon={faEraser}/>
+            <div data-api_type={api_result_type.REMOVE_BACKGROUND} className="box">
+                <button disabled={input_image_type !== img_type_obj.PERSON_IMAGE} className={`${input_image_type !== img_type_obj.PERSON_IMAGE ? 'function-btn disable' : 'function-btn'}`}>
+                    <FontAwesomeIcon icon={faEraser} />
                     <span>배경제거</span>
                 </button>
             </div>
@@ -258,20 +284,20 @@ const FunctionBtnWrapper = ()=>{
                 </button>
             </div> */}
             <div data-api_type={api_result_type.CARTOONIZE} className="box">
-                <button disabled={output_image_type===output_type.LINE||input_image_type!==img_type_obj.PERSON_IMAGE} className={`${(output_image_type===output_type.LINE||input_image_type!==img_type_obj.PERSON_IMAGE)?'function-btn disable':'function-btn'}`}>
-                    <FontAwesomeIcon icon={faFaceMehBlank}/>
+                <button disabled={output_image_type === output_type.LINE || input_image_type !== img_type_obj.PERSON_IMAGE} className={`${(output_image_type === output_type.LINE || input_image_type !== img_type_obj.PERSON_IMAGE) ? 'function-btn disable' : 'function-btn'}`}>
+                    <FontAwesomeIcon icon={faFaceMehBlank} />
                     <span>캐릭터 변환</span>
                 </button>
             </div>
-            <div data-api_type={api_result_type.COLORIZE} className="box">
-                <button disabled={input_image_type!==img_type_obj.PERSON_IMAGE} className={`${input_image_type!==img_type_obj.PERSON_IMAGE?'function-btn disable':'function-btn'}`}>
-                    <FontAwesomeIcon icon={faPalette}/>
+            {/* <div data-api_type={api_result_type.COLORIZE} className="box">
+                <button disabled={input_image_type !== img_type_obj.PERSON_IMAGE} className={`${input_image_type !== img_type_obj.PERSON_IMAGE ? 'function-btn disable' : 'function-btn'}`}>
+                    <FontAwesomeIcon icon={faPalette} />
                     <span>채색하기</span>
                 </button>
-            </div>
+            </div> */}
             <div data-api_type={api_result_type.CHANGE_FACIAL_EXPRESSION} className="box">
-                <button disabled={input_image_type!==img_type_obj.CARTOONIZED_IMAGE} className={`${input_image_type!==img_type_obj.CARTOONIZED_IMAGE?'function-btn disable':'function-btn'}`}>
-                    <FontAwesomeIcon icon={faFaceGrin}/>
+                <button disabled={input_image_type !== img_type_obj.CARTOONIZED_IMAGE} className={`${input_image_type !== img_type_obj.CARTOONIZED_IMAGE ? 'function-btn disable' : 'function-btn'}`}>
+                    <FontAwesomeIcon icon={faFaceGrin} />
                     <span>표정변환</span>
                 </button>
             </div>

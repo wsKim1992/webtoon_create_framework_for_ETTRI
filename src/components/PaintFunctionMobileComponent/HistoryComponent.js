@@ -8,6 +8,7 @@ import sampleSketch5 from '../../assets/sample_sketch/5.png';
 import sampleSketch6 from '../../assets/sample_sketch/6.png';
 import sampleSketch7 from '../../assets/sample_sketch/7.png';
 import sampleSketch8 from '../../assets/sample_sketch/8.png';
+import { useSelector } from 'react-redux';
 
 const findElement = (element,findCondition,endCondition)=>{
     const flag = element.tagName.toUpperCase()===findCondition||element.classList.contains(findCondition);
@@ -23,8 +24,9 @@ const findElement = (element,findCondition,endCondition)=>{
 
 const HistoryComponent = memo(()=>{
     const { PaintStateDispatch, pen, history } = useContext(PaintStateContext);
-
+    const {loadingCallAPI} = useSelector(state=>state.callAPIPaintReducer)
     const onClickSampleList = useCallback(async(evt)=>{
+        if(loadingCallAPI){return false;}
         
         const {target:thisElement} = evt;
         const findCondition = 'IMG';
@@ -42,7 +44,7 @@ const HistoryComponent = memo(()=>{
                 return false;
             }
         }
-    },[]);
+    },[loadingCallAPI]);
 
     const onClickHistoryList = useCallback((evt)=>{
         const {target:thisElement} = evt;

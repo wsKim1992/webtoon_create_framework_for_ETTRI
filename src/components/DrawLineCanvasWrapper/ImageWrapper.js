@@ -57,6 +57,9 @@ const EntireContainer = styled.div`
                     position:absolute;
                     top:0;left:0;
                     object-fit:fill;
+                    transform: rotateY(180deg);
+                    -webkit-transform:rotateY(180deg); 
+                    -moz-transform:rotateY(180deg);
                 }
                 .button-component{
                     position:absolute;
@@ -174,6 +177,13 @@ const EntireContainer = styled.div`
             }
         }
     }
+    @media screen and (max-height:965px){
+        .image-padding{
+            .image{
+                width:512px;height:512px;
+            }
+        }
+    }
     @media screen and (max-width:1270px){
         .image-padding{
             position:relative;
@@ -213,6 +223,26 @@ const EntireContainer = styled.div`
                     }
                     .camera-text-box{
                         font-size: 15.5px;
+                    }
+                    
+                    
+                }
+            }
+        }
+    }
+    @media screen and (max-height:450px){
+        .image-padding{
+            .image{
+                .camera-component{
+                    .camera-icon-box{
+                        text-align: center;
+                        line-height: 30.5px;
+                        width: 35px;
+                        height: 35px;
+                        font-size: 14.5px;
+                    }
+                    .camera-text-box{
+                        font-size: 12.5px;
                     }
                     
                     

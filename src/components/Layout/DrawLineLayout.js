@@ -110,7 +110,66 @@ const EntireWrapper = styled.div`
         width:100%;
         margin:none;
     }
-    @media screen and (max-width:1270px){
+
+    @media screen and (max-width:1270px) and (orientation:landscape){
+        width:calc(100% - 18.5px);height:100%;
+        margin:0 auto;
+        display:flex;
+        flex-direction: row;
+        justify-content: space-between;
+        #title{
+            display:none;
+        }
+        .input-image-banner-container{
+            width:155px;
+            .input-image-banner-wrapper{
+                padding: 10px;
+                .input-image-banner-box{
+                    width:100%;height:100%;
+                    .single-image-wrapper{
+                        width:100%;height:auto;
+                        margin-bottom: 20px;
+                        img{
+                            display:block;
+                            width:100%;height:auto;
+                            object-fit:contain;
+                        }
+                    }
+                }
+            }
+        }
+        .show-image-container{
+            width:calc(100% - 510px);height:100%;
+            .show-image-wrapper{
+                width:100%;height:100%;
+                .title{
+                    height:55.5px;
+                    line-height:55.5px;
+                    text-align:center;
+                    font-size:35.5px;
+                    font-weight:bold;
+                    color:#fff;
+                }
+                .image-box{
+                    width:100%;height:100%;
+                }
+            }
+        }
+        .output-image-banner-contain{
+            width:155px;
+            .output-image-banner-wrapper{
+                padding:10px;
+                .output-image-banner-box{
+                    .single-image-wrapper{
+                        margin-bottom: 10px;
+                    }
+                }
+                
+            }
+        }
+    }
+
+    @media screen and (max-width:1270px) and (orientation:portrait) {
         #title{
             display:block;
             height:35.5px;
@@ -181,7 +240,59 @@ const EntireWrapper = styled.div`
             }
         }
     }
-    @media screen and (max-width:940px){
+
+    @media screen and (max-width:940px) and (orientation:landscape){
+        width:calc(100% - 18.5px);height:100%;
+        margin:0 auto;
+        display:flex;
+        flex-direction: row;
+        justify-content: space-between;
+        #title{
+            display:none;
+        }
+        .input-image-banner-container{
+            width:125px;
+            .input-image-banner-wrapper{
+                padding: 10px;
+                .input-image-banner-box{
+                    width:100%;height:100%;
+                    .single-image-wrapper{
+                        width:100%;height:auto;
+                        margin-bottom: 20px;
+                        img{
+                            display:block;
+                            width:100%;height:auto;
+                            object-fit:contain;
+                        }
+                    }
+                }
+            }
+        }
+        .show-image-container{
+            width:calc(100% - 295px);height:100%;
+            .show-image-wrapper{
+                width:100%;height:100%;
+                .image-box{
+                    width:100%;
+                    height: 100%;
+                }
+            }
+        }
+        .output-image-banner-contain{
+            width:125px;
+            .output-image-banner-wrapper{
+                padding:10px;
+                .output-image-banner-box{
+                    .single-image-wrapper{
+                        margin-bottom: 10px;
+                    }
+                }
+                
+            }
+        }
+    }
+
+    @media screen and (max-width:940px) and (orientation:portrait){
         width:100%;
         flex-direction:column;
         .input-image-banner-container{
@@ -207,7 +318,8 @@ const EntireWrapper = styled.div`
             }
         }
         .show-image-container{
-            width:100%;height:calc(100% - 310px);
+            width:100%;height:calc(100% - 250px);
+            
             .show-image-wrapper{
                 width: 70%;
                 height: 100%;
@@ -240,63 +352,116 @@ const EntireWrapper = styled.div`
             }
         }
     }
-    @media screen and (max-width:640px){
-        #title{
-            height: 45.5px;
-            line-height: 45.5px;
-            font-size: 30px;
-            margin-bottom: 20.5px;
-        }
-        justify-content:center;
+
+    @media screen and (max-width:640px) and (orientation:portrait){
+        width:100%;
+        flex-direction:column;
         .input-image-banner-container{
-            width:100%;    height: 55px;
+            width:100%;    height: 105px;
             .input-image-banner-wrapper{
-                padding:2.5px;
+                width:100%;height:100%;
+                padding:5.5px;
+                overflow-y:none;
+                overflow-x:scroll;
                 .input-image-banner-box{
                     width:100%;height:100%;
                     display:flex;flex-direction:row;
                     .single-image-wrapper{
-                        width:auto;height:100%;
                         margin:0 5.5px;
-                        &:hover{
-                            border:none;
-                        }
-                        &.on{
-                            border:1.5px solid #669DFD;
+                        img{
                         }
                     }
                 }
             }
         }
         .show-image-container{
-            width:100%;height:calc(100% - 215px);
+            width:100%;height:calc(100% - 250px);
+            
             .show-image-wrapper{
-                width: 100%;
+                width: 70%;
                 height: 100%;
                 margin: 0 auto;
                 .title{
                     display:none
                 }
                 .image-box{
-                    width: 95%;
-                    margin: 0 auto;
-                    height:100%;
+                    width:100%;height:100%;
                 }
             }
         }
         .output-image-banner-contain{
-            width:100%;height:55px;
+            width:100%;height:105px;
             .output-image-banner-wrapper{
                 width:100%;height:100%;
-                padding:2.5px;
+                padding:5.5px;
+                overflow-y:none;
+                overflow-x:scroll;
+                display:flex;flex-direction:row;
                 .output-image-banner-box{
+                    display:flex;flex-direction:row;
                     .single-image-wrapper{
+                        width:auto;height:100%;
                         margin:0 5.5px;
+                    }
+                    
+                }
+                
+            }
+        }
+    }
+
+    @media screen and (max-width:640px) and (orientation:landscape){
+        width:calc(100% - 10.5px);height:100%;
+        margin:0 auto;
+        display:flex;
+        flex-direction: row;
+        justify-content: space-between;
+        #title{
+            display:none;
+        }
+        .input-image-banner-container{
+            width:95px;
+            .input-image-banner-wrapper{
+                padding: 5.5px;
+                .input-image-banner-box{
+                    width:100%;height:100%;
+                    .single-image-wrapper{
+                        width:100%;height:auto;
+                        margin-bottom: 5.5px;
+                        img{
+                        }
                         &:hover{
-                            border:none;
+                            border:2.5px solid #669DFD;
                         }
                         &.on{
-                            border:1.5px solid #669DFD;
+                            border:2.5px solid #669DFD;
+                        }
+                    }
+                }
+            }
+        }
+        .show-image-container{
+            width:calc(100% - 195px);height:100%;
+            .show-image-wrapper{
+                width:100%;height:100%;
+                .image-box{
+                    width:100%;
+                    height: 100%;
+                }
+            }
+        }
+        .output-image-banner-contain{
+            width:95px;
+            .output-image-banner-wrapper{
+                padding:5.5px;
+                .output-image-banner-box{
+                    .single-image-wrapper{
+                        margin-bottom: 5.5px;
+                        &:hover{
+                            border:2.5px solid #669DFD;
+                        }
+                        &.on{
+                            border:2.5px solid #669DFD;
                         }
                     }
                 }
@@ -304,7 +469,8 @@ const EntireWrapper = styled.div`
             }
         }
     }
-    @media screen and (max-width:400px){
+
+    @media screen and (max-width:400px) and (orientation:portrait){
         width:100%;
         #title{
             height: 35.5px;
@@ -372,7 +538,8 @@ export const convertIntoBase64WithMedia = (obj,width,height)=>{
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = obj.width;
     tempCanvas.height = obj.height;
-    
+    tempCanvas.getContext('2d').scale(-1,1);
+    tempCanvas.getContext('2d').translate(-tempCanvas.width,0);
     tempCanvas.getContext('2d').drawImage(obj,0,0,tempCanvas.width,tempCanvas.height);
     return tempCanvas.toDataURL('image/png');
 }
@@ -607,7 +774,7 @@ const DrawLineLayout = memo(() => {
             <EntireContainer>
 
                 <EntireWrapper>
-                    <h1 id="title">이미지로 Toon 생성</h1>
+                    {/* <h1 id="title">사진으로 웹툰 만들기</h1> */}
                     <div className="input-image-banner-container">
                         <div className="input-image-banner-wrapper">
                             <DrawlineInputBanner />
@@ -615,7 +782,7 @@ const DrawLineLayout = memo(() => {
                     </div>
                     <div className="show-image-container">
                         <div className="show-image-wrapper">
-                            <h1 className="title">이미지로 Toon 생성</h1>
+                            {/* <h1 className="title">사진으로 웹툰 만들기</h1> */}
                             <div className="image-box">
                                 <DrawLineCanvasBox />
                             </div>

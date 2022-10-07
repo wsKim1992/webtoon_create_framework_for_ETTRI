@@ -1,15 +1,17 @@
-import React,{memo,useState,useEffect,useRef,useContext} from "react";
+import React,{memo,useState,useEffect,useRef,useContext, useCallback} from "react";
 import CanvasControllerButtonlist from "./CanvasControllerButtonlist";
 import {
     PaintStateContext,canvasMode,
     UPDATE_PAINT_AXIS,DELETE_PAINT_AXIS,INIT_CANVAS,
     CHANGE_STROKE_STYLE,settingCanvasSize,drawImage, CHANGE_COLOR,
-    drawPointsOnCanvas
+    drawPointsOnCanvas,adjustCanvas
 } from '../Layout/PaintLayout';
+import loadingImage from '../../assets/gif/0019.gif';
+import { useSelector } from "react-redux";
 
 const CanvasWrap = memo(()=>{
     const canvasRef = useRef(null);
-    
+    const {loadingCallAPI} = useSelector(state=>state.callAPIPaintReducer);
     const {pen,show_pointer,history,paint_axis_arr,PaintStateDispatch} = useContext(PaintStateContext);
 
     const [isDraw,setIsDraw] = useState(false);
@@ -99,13 +101,19 @@ const CanvasWrap = memo(()=>{
     }
 
     useEffect(()=>{
-        window.addEventListener("resize",settingCanvasSize);
+        window.addEventListener("resize",reshapeCanvas);
         return ()=>{
-            canvasRef.current=null;
-            PaintStateDispatch({type:INIT_CANVAS});
-            window.removeEventListener("resize",settingCanvasSize);
+            /* canvasRef.current=null;
+            PaintStateDispatch({type:INIT_CANVAS}); */
+            window.removeEventListener("resize",reshapeCanvas);
         }
-    },[]);
+    },[pen.src,canvasRef.current]);
+
+    const reshapeCanvas = useCallback(()=>{
+        if(canvasRef.current&&pen.src){
+            adjustCanvas(canvasRef.current,pen.src);
+        }
+    },[pen.src,canvasRef.current]);
 
     useEffect(()=>{
         if(canvasRef.current){
@@ -144,6 +152,15 @@ const CanvasWrap = memo(()=>{
                     onMouseMove={canvasFunctionList[pen.mode].onMouseMove}
                     onMouseUp={canvasFunctionList[pen.mode].onMouseUp}
                 />
+                {
+                    loadingCallAPI&&
+                    (
+                        <div className="loading-component">
+                            <img src={loadingImage} alt="loading-image"/>
+                        </div>
+
+                    )
+                }
             </div>
             <CanvasControllerButtonlist/>
         </div>

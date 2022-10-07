@@ -1,4 +1,4 @@
-import React, { memo, useContext, useCallback, } from 'react';
+import React, { memo, useContext, useCallback,useRef, useEffect } from 'react';
 import outputSample1 from '../../assets/drawline_sample/drawline_sample_right/drawline_right/right1.png';
 import outputSample2 from '../../assets/drawline_sample/drawline_sample_right/drawline_right/right2.png';
 import outputSample3 from '../../assets/drawline_sample/drawline_sample_right/drawline_right/right3.png';
@@ -7,6 +7,7 @@ import outputSample5 from '../../assets/drawline_sample/drawline_sample_right/dr
 import { CHANGE_INPUT_IMAGE, DrawLineContext, findElement, src_type_obj ,img_type_obj} from '../Layout/DrawLineLayout'
 
 const DrawlineInputBanner = memo(() => {
+    const containerRef = useRef(null);
     const { 
         input_image_type,
         input_image_idx, 
@@ -26,8 +27,21 @@ const DrawlineInputBanner = memo(() => {
         }
     },[])
 
+    useEffect(()=>{
+        if(containerRef.current){
+            const singleImageWrapper = document.querySelectorAll('.single-image-wrapper');
+            const singleImageWrapperLength = singleImageWrapper.length;
+            const top = singleImageWrapper[singleImageWrapperLength-1].offsetTop;
+            console.log(top);
+            containerRef.current.scrollTo({
+                top:containerRef.current.scrollHeight-top,
+                behavior:'smooth'
+            })
+        }
+    },[containerRef.current,cartoonize_image_list])
+
     return (
-        <div onClick={onClickBox} className="output-image-banner-box">
+        <div ref={containerRef} onClick={onClickBox} className="output-image-banner-box">
             <div className={`${input_image_type===img_type_obj.CARTOONIZED_IMAGE&&input_image_idx===0?'single-image-wrapper on':'single-image-wrapper'}`}>
                 <img  data-idx={0} data-input_image_src_type={src_type_obj.DIR_PATH} src={outputSample1} alt="single-image" />
             </div>
@@ -57,7 +71,7 @@ const DrawlineInputBanner = memo(() => {
                         key={i}
                         className={`${input_image_type===img_type_obj.CARTOONIZED_IMAGE&&input_image_idx===i+5?'single-image-wrapper on':'single-image-wrapper'}`}
                     >
-                        <img data-idx={i+3} data-input_image_src_type={v.src_type} src={v.src} alt="single-image" />
+                        <img data-idx={i+5} data-input_image_src_type={v.src_type} src={v.src} alt="single-image" />
                     </div>
                 ))
             }

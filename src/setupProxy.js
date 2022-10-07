@@ -29,6 +29,20 @@ module.exports = function(app){
         })
     ),
     app.use(
+        proxy('/hint_colorize_v2',{
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+        })
+    ),
+    app.use(
+        proxy('/hint_colorize_v3',{
+            target:'http://1.201.8.82:9991',
+            changeOrigin:true,
+            secure: false,
+        })
+    ),
+    app.use(
         proxy('/cartoonize',{
             target:'http://1.201.8.82:9999',
             changeOrigin:true,

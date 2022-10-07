@@ -4,19 +4,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaintBrush ,faEraser  ,faEyeDropper} from "@fortawesome/free-solid-svg-icons";
 import { faHand} from '@fortawesome/free-regular-svg-icons';
 import {PaintStateContext,CHANGE_MODE,canvasMode} from '../Layout/PaintLayout';
+import { useSelector } from 'react-redux';
 
 const ToolBoxComponent = memo(() => {
-
+    const {loadingCallAPI} = useSelector(state=>state.callAPIPaintReducer)
     const {PaintStateDispatch,pen} = useContext(PaintStateContext);
 
     const choosePenMode = useCallback((evt)=>{
+        if(loadingCallAPI)return false;
         const {target:thisElement}=evt;
         const element = findElement(thisElement,'mobile-canvas-mode-button','mobile-button-list-box');
         if(element){
             const {mode}= element.dataset;
             PaintStateDispatch({type:CHANGE_MODE,mode});
         }
-    },[])
+    },[loadingCallAPI])
 
     return (
         <div onClick={choosePenMode} className="mobile-button-list-box">

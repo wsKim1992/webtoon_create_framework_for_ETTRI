@@ -51,7 +51,7 @@ const DrawlineInputBanner = memo(()=>{
             </div>
             {
                 person_image_list.map((v,i)=>(
-                    <div key={i} className={`${input_image_type===img_type_obj.PERSON_IMAGE&&input_image_idx===i+3?'single-image-wrapper on':'single-image-wrapper'}`}>
+                    <div key={i} className={`${input_image_type===img_type_obj.PERSON_IMAGE&&input_image_idx===i+6?'single-image-wrapper on':'single-image-wrapper'}`}>
                         <img data-idx={i+6} data-input_image_src_type={v.src_type} src={v.src} alt="single-image" />
                     </div>
                 ))

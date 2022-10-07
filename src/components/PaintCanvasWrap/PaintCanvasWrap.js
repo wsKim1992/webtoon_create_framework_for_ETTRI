@@ -1,4 +1,5 @@
 import React,{memo} from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 /* import UpperButtonList from './UpperButtonList'; */
 import CanvasWrap from './CanvasWrap';
@@ -56,6 +57,22 @@ const EntireCanvasWrap = styled.div`
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                position:relative;
+                .loading-component{
+                    position:absolute;
+                    top:0;left:0;
+                    width:100%;height:100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(45,45,45,0.65);
+                    >img{
+                        display:block;
+                        width:auto;
+                        height:auto;
+                        object-fit:contain;
+                    }
+                }
             }
             .canvas-button-list-wrap{
                 margin-top: 15px;
@@ -159,7 +176,7 @@ const EntireCanvasWrap = styled.div`
     @media screen and (max-width:2499px){
         .canvas-container{
             .canvas-wrap{
-                width:1050px;
+                width:850px;
             }
         }
     }
@@ -173,21 +190,21 @@ const EntireCanvasWrap = styled.div`
     @media screen and (max-width:1249px){
         .canvas-container{
             .canvas-wrap{
-                width:512px;
+                width:682px;
             }
         }
     }
     @media screen and (max-width:1024px){
         .canvas-container{
             .canvas-wrap{
-                width:412px;
+                width:682px;
             }
         }
     }
-    @media screen and (max-width:554px){
+    @media screen and (max-width:655px){
         .canvas-container{
             .canvas-wrap{
-                width:385px;
+                width:582px;
             }
         }
     }
@@ -203,7 +220,6 @@ const EntireCanvasWrap = styled.div`
 
 
 const PaintCanvasWrap = memo(()=>{
-    
     return(
         <EntireCanvasWrap>
             
@@ -213,6 +229,7 @@ const PaintCanvasWrap = memo(()=>{
                 <div className="canvas-container">
                     <CanvasWrap/>
                 </div>
+                
                 {/* <div className="main-button-list">
                     <MainButtonList/>
                 </div> */}

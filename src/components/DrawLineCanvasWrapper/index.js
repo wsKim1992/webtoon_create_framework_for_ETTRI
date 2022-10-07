@@ -12,15 +12,60 @@ const EntireCanvasBox = styled.div`
         width:100%;
         height:135px;
     }
-    @media screen and (max-width:1270px){
+
+    @media screen and (max-width:1270px) and (orientation:landscape){
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
         .image-container{
-            width:100%;height:calc(100% - 90px);
+            margin:0 auto;
+            width:75%;height:auto;
         }
         .function-btn-container{
             width:100%;
             height:80px;
         }
     }
+
+    @media screen and (max-height:965px) and (orientation:portrait){
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        .image-container{
+            width:70.5%;height:100%;
+        }
+        .function-btn-container{
+            width:100%;
+            height:65px;
+        }
+    }
+
+    @media screen and (max-width:965px) and (orientation:landscape){
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
+        .image-container{
+            width:70.5%;height:auto;
+        }
+        .function-btn-container{
+            width:100%;
+            height:50px;
+        }
+    }
+    @media screen and (max-width:965px) and (max-height:600px) and (orientation:landscape){
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
+        .image-container{
+            width:50.5%;height:auto;
+        }
+        .function-btn-container{
+            width:100%;
+            height:30px;
+        }
+    }
+
     @media screen and (max-width:640px){
         .image-container{
             width:100%;height:calc(100% - 65px);
@@ -28,6 +73,31 @@ const EntireCanvasBox = styled.div`
         .function-btn-container{
             width:100%;
             height:50px;
+        }
+    }
+
+    @media screen and (max-width:640px) and (orientation:landscape){
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
+        .image-container{
+            width:80.5%;height:auto;
+        }
+        .function-btn-container{
+            width:100%;
+            height:30px;
+        }
+    }
+    @media screen and (max-width:640px) and (max-height:400px) and (orientation:landscape){
+        display: flex;
+        flex-direction: column;
+        justify-content:space-evenly;
+        .image-container{
+            width:80.5%;height:auto;
+        }
+        .function-btn-container{
+            width:100%;
+            height:20px;
         }
     }
 `;
