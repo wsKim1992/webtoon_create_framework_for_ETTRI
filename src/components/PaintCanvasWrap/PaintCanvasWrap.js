@@ -8,7 +8,7 @@ import CanvasWrap from './CanvasWrap';
 const EntireCanvasWrap = styled.div`
     width:100%;height:100%;
     background-color:#E7E7DC;
-    overflow-y:scroll;
+    overflow-y:hidden;
     -ms-overflow-style:none;
     scrollbar-width:none;
     &::-webkit-scrollbar{
@@ -173,42 +173,85 @@ const EntireCanvasWrap = styled.div`
             }
         }
     }
-    @media screen and (max-width:2499px){
+    @media screen and (max-width:2499px) and (orientation:portrait){
         .canvas-container{
             .canvas-wrap{
                 width:850px;
             }
         }
     }
-    @media screen and (max-width:1900px){
+    @media screen and (max-width:1900px) and (orientation:portrait){
         .canvas-container{
             .canvas-wrap{
                 width:615px;
             }
         }
     }
-    @media screen and (max-width:1249px){
+    @media screen and (max-width:1249px) and (orientation:portrait){
         .canvas-container{
             .canvas-wrap{
                 width:682px;
             }
         }
     }
-    @media screen and (max-width:1024px){
+    @media screen and (max-width:1024px) and (orientation:portrait){
         .canvas-container{
             .canvas-wrap{
                 width:682px;
             }
         }
     }
-    @media screen and (max-width:655px){
+    @media screen and (max-width:655px) and (orientation:portrait){
         .canvas-container{
             .canvas-wrap{
                 width:582px;
             }
         }
     }
-    @media screen and (max-width:434px){
+    @media screen and (max-width:434px) and (orientation:portrait){
+        .canvas-container{
+            .canvas-wrap{
+                width:315px;
+            }
+        }
+    }
+
+    @media screen and (max-width:2499px) and (orientation:landscape){
+        .canvas-container{
+            .canvas-wrap{
+                width:850px;
+            }
+        }
+    }
+    @media screen and (max-width:1900px) and (orientation:landscape){
+        .canvas-container{
+            .canvas-wrap{
+                width:615px;
+            }
+        }
+    }
+    @media screen and (max-width:1449px) and (orientation:landscape){
+        .canvas-container{
+            .canvas-wrap{
+                width:552px;
+            }
+        }
+    }
+    @media screen and (max-width:1024px) and (orientation:landscape){
+        .canvas-container{
+            .canvas-wrap{
+                width:482px;
+            }
+        }
+    }
+    @media screen and (max-width:655px) and (orientation:landscape){
+        .canvas-container{
+            .canvas-wrap{
+                width:402px;
+            }
+        }
+    }
+    @media screen and (max-width:434px) and (orientation:landscape){
         .canvas-container{
             .canvas-wrap{
                 width:315px;

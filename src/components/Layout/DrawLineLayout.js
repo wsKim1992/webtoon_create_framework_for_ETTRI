@@ -67,7 +67,7 @@ const EntireWrapper = styled.div`
                 color:#fff;
             }
             .image-box{
-                width:100%;height:calc(100% - 55.5px);
+                width:100%;height:100%;
             }
         }
     }
